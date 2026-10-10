@@ -1,0 +1,17 @@
+{
+  "name": "logbook-kinerja",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Logbook Kinerja Android wrapper preserving existing web app and Supabase connection",
+  "scripts": {
+    "sync:android": "cap sync android",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

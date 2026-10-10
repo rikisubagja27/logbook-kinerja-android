@@ -1,0 +1,9 @@
+{
+  "appId": "id.manoko.logbookkinerja",
+  "appName": "Logbook Kinerja",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

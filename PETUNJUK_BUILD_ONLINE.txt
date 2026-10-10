@@ -1,0 +1,17 @@
+LOGBOOK KINERJA - BUILD APK ONLINE MELALUI GITHUB ACTIONS
+
+1. Buat repository GitHub (Private disarankan).
+2. Ekstrak ZIP ini di aplikasi File iPhone.
+3. Upload ISI folder hasil ekstrak ke repository GitHub (bukan file ZIP saja). Pastikan folder .github ikut terunggah.
+4. Commit changes.
+5. Buka tab Actions di repository.
+6. Pilih "Build Logbook Kinerja APK".
+7. Tekan "Run workflow", lalu konfirmasi "Run workflow".
+8. Tunggu sampai workflow selesai hijau.
+9. Buka hasil run dan unduh artifact "Logbook-Kinerja-APK". Ekstrak artifact ZIP untuk mendapatkan app-debug.apk.
+
+Catatan:
+- Paket ini berisi proyek sumber, bukan APK siap instal.
+- Build debug APK cocok untuk uji coba dan berbagi terbatas. Untuk Google Play, perlu proses signing/release sesuai persyaratan Play.
+- Uji login, simpan data, foto/kamera, serta laporan sebelum dipakai operasional.
+- Jangan mengganti atau menghapus project Supabase lama.
