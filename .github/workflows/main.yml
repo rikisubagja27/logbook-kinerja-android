@@ -25,10 +25,13 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Check project files
+      - name: Find project
         run: |
-          ls -la
-          find . -maxdepth 3 -name package.json -o -name gradlew
+          find . -maxdepth 4 -name package.json
+          test -f package.json || {
+            echo "ERROR: package.json tidak ditemukan"
+            exit 1
+          }
 
       - name: Install dependencies
         run: npm install
