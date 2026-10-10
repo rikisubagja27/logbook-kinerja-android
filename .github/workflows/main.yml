@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
   run: npm install
-  working-directory: .
+  
 
       - name: Generate Android project
         run: npx cap add android
