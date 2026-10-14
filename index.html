@@ -13,19 +13,192 @@
       user-select: auto !important;
       pointer-events: auto !important;
     }
- /* Tampilan Kertas Laporan di Web */
-.preview-container {
-    background-color: #ffffff;
-    width: 210mm;
-    min-height: 297mm;
-    padding: 2.54cm;
-    margin: 20px auto;
-    font-family: Arial, "Arial MT", sans-serif !important;
-    font-size: 11pt;
-    line-height: 1.5;
-    box-shadow: 0 0 10px rgba(0,0,0,0.15);
-    box-sizing: border-box;
-}
+ if(!window.docx) throw Error('Komponen pembuat Word belum siap');
+
+const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, PageBreak, AlignmentType, WidthType } = window.docx;
+
+const a = selected(), p = profile, info = periodInfo;
+const fontName = "Arial"; // Seluruh dokumen menggunakan Font Arial
+
+// Helper Paragraf Rata Kiri & Rata Kanan (JUSTIFY)
+const para = (text, opts = {}) => new Paragraph({
+    alignment: opts.align || AlignmentType.JUSTIFY, // Set Justify (Rata Kiri Kanan)
+    spacing: { before: opts.before || 0, after: opts.after || 120, line: 360 }, // Spasi 1.5
+    children: [
+        new TextRun({
+            text: text,
+            font: fontName,
+            size: opts.size || 24, // 12pt
+            bold: !!opts.bold,
+            italic: !!opts.italic
+        })
+    ]
+});
+
+// Helper Judul Rata Tengah (CENTER)
+const centerHeading = (text, size = 24, bold = true, spacingAfter = 120) => new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 60, after: spacingAfter },
+    children: [
+        new TextRun({
+            text: text,
+            font: fontName,
+            size: size,
+            bold: bold
+        })
+    ]
+});
+
+const cell = (v, widthPercent, bold = false, align = AlignmentType.LEFT) => new TableCell({
+    width: { size: widthPercent, type: WidthType.PERCENTAGE },
+    children: [
+        new Paragraph({
+            alignment: align,
+            spacing: { before: 60, after: 60 },
+            children: [
+                new TextRun({
+                    text: String(v ?? ''),
+                    font: fontName,
+                    size: 20, // 10pt dalam tabel
+                    bold: bold
+                })
+            ]
+        })
+    ]
+});
+
+const pageBreak = () => new Paragraph({ children: [new PageBreak()] });
+
+let children = [];
+
+// ==========================================
+// 1. COVER LAPORAN (SAMA PERSIS DOKUMEN RESMI)
+// ==========================================
+children.push(centerHeading('LAPORAN KINERJA', 28, true, 40));
+children.push(centerHeading('PELAKSANAAN TUGAS OPERASIONAL KANTOR', 28, true, 40));
+children.push(centerHeading(`BULAN ${(info.monthName || 'APRIL').toUpperCase()} TAHUN ${info.year || '2026'}`, 28, true, 240));
+
+// Logo PVTPP
+try {
+    if (window.logoBytes) {
+        children.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+            children: [
+                new window.docx.ImageRun({
+                    data: window.logoBytes,
+                    transformation: { width: 110, height: 110 }
+                })
+            ]
+        }));
+    }
+} catch(e) { console.log('Logo skip/error:', e); }
+
+children.push(centerHeading('Disusun oleh :', 24, false, 80));
+children.push(centerHeading(p.name || 'Riki Subagja', 24, true, 40));
+children.push(centerHeading(p.nip || '199808272025211042', 24, false, 40));
+children.push(centerHeading(p.role || 'Operator Layanan Operasional', 24, false, 300));
+
+children.push(centerHeading('PUSAT PELINDUNGAN VARIETAS TANAMAN', 24, true, 40));
+children.push(centerHeading('DAN PERIZINAN PERTANIAN', 24, true, 80));
+children.push(centerHeading(String(info.year || '2026'), 24, true, 120));
+
+// ==========================================
+// 2. BAB I PENDAHULUAN (JUSTIFY)
+// ==========================================
+children.push(pageBreak());
+children.push(centerHeading('BAB I PENDAHULUAN', 24, true, 240));
+
+children.push(para('LATAR BELAKANG', { bold: true }));
+children.push(para('Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional dan pelayanan perkantoran secara efektif, tertib, dan berkesinambungan. Salah satu bentuk dukungan tersebut dilaksanakan melalui penempatan PPPK Paruh Waktu pada jabatan Operator Layanan Operasional.'));
+children.push(para('PPPK Paruh Waktu pada jabatan tersebut memiliki peran dalam membantu pelaksanaan kegiatan administrasi, layanan internal, pengelolaan kebutuhan umum, penataan dokumen, pengelolaan sarana dan prasarana, serta dukungan terhadap berbagai kegiatan kedinasan. Pelaksanaan tugas tersebut diperlukan untuk memastikan kegiatan operasional kantor dapat berjalan dengan baik dan memberikan pelayanan yang optimal kepada pegawai maupun unit kerja. Sejalan dengan kebutuhan organisasi, pelaksanaan tugas PPPK Paruh Waktu perlu diarahkan secara jelas berdasarkan peran, tanggung jawab, dan hasil yang diharapkan. Oleh karena itu, diperlukan uraian mengenai ruang lingkup pekerjaan dan hasil pelaksanaan sebagai dasar dalam pengelolaan, pemantauan, dan evaluasi kinerja PPPK Paruh Waktu.'));
+
+children.push(para('TUJUAN', { bold: true }));
+children.push(para('Tujuan penyusunan laporan pelaksanaan tugas dan fungsi jabatan Operator Layanan Operasional, adalah sebagai bentuk pertanggungjawaban kinerja pegawai di lingkungan Pusat Pelindungan Varietas Tanaman dan Perizinan Pertanian, sesuai dengan uraian tugas yang tercantum dalam Matriks Peran Hasil (MPH) yang ditetapkan.'));
+
+children.push(para('WAKTU PELAKSANAAN', { bold: true }));
+children.push(para(`Kegiatan Operator Layanan Operasional dilaksanakan di Kebun Pemeriksaan Substantif PVT I Manoko pada satuan Kerja Kantor Pusat Pusat Pelindungan Varietas Tanaman dan Perizinan Pertanian (PVTPP) pada periode Bulan ${info.monthName || 'April'} Tahun ${info.year || '2026'}.`));
+
+// ==========================================
+// 3. BAB II AKUNTABILITAS KINERJA
+// ==========================================
+children.push(pageBreak());
+children.push(centerHeading('BAB II', 24, true, 40));
+children.push(centerHeading('AKUNTABILITAS KINERJA', 24, true, 240));
+
+children.push(para('HASIL PELAKSANAAN', { bold: true }));
+children.push(para('Kegiatan Operator Layanan Operasional', { bold: false }));
+children.push(para(`Tabel 1. Rincian kegiatan operator layanan operasional Bulan ${info.monthName || 'April'} Tahun ${info.year || '2026'}`, { bold: false }));
+
+// Header Tabel
+const tableRows = [
+    new TableRow({
+        tableHeader: true,
+        children: [
+            cell('No.', 10, true, AlignmentType.CENTER),
+            cell('Tanggal', 20, true, AlignmentType.CENTER),
+            cell('Rincian Pekerjaan', 45, true, AlignmentType.CENTER),
+            cell('Keterangan', 25, true, AlignmentType.CENTER)
+        ]
+    })
+];
+
+// Isi Tabel Otomatis
+const activities = a || [];
+activities.forEach((act, idx) => {
+    tableRows.push(new TableRow({
+        children: [
+            cell(idx + 1, 10, false, AlignmentType.CENTER),
+            cell(act.date || act.tanggal || '', 20, false, AlignmentType.LEFT),
+            cell(act.work || act.rincian || '', 45, false, AlignmentType.LEFT),
+            cell(act.note || act.keterangan || '', 25, false, AlignmentType.LEFT)
+        ]
+    }));
+});
+
+children.push(new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: tableRows
+}));
+
+// ==========================================
+// 4. BAB III PENUTUP (JUSTIFY)
+// ==========================================
+children.push(pageBreak());
+children.push(centerHeading('BAB III', 24, true, 40));
+children.push(centerHeading('PENUTUP', 24, true, 240));
+
+children.push(para(`Pada bulan ${info.monthName || 'April'} tahun ${info.year || '2026'} secara umum kegiatan pelaksanaan tugas PPPK Paruh Waktu jabatan Operator Layanan Operasional telah mendukung kelancaran operasional KPS PVT I Manoko. Kegiatan utama meliputi pengolahan lahan, pemeliharaan, penyiraman, penyiangan dan pengendalian gulma, panen dan penanganan hasil panen, serta pelaksanaan uji BUSS, pembersihan area kerja, pemeliharaan sarana pendukung, dan dukungan kegiatan lainnya yang berhubungan dengan kegiatan operasional kebun. Secara umum kegiatan terlaksana secara tertib, efektif, dan sesuai dengan tugas serta mendukung pencapaian tujuan dan kelancaran tugas organisasi.`));
+children.push(para('Demikian laporan ini disampaikan. Atas perhatian dan kerjasamanya, diucapkan terima kasih.'));
+
+// Tanda Tangan Rata Kanan
+children.push(new Paragraph({
+    alignment: AlignmentType.RIGHT,
+    spacing: { before: 360, after: 60 },
+    children: [
+        new TextRun({ text: `Bandung Barat, 30 ${info.monthName || 'April'} ${info.year || '2026'}\n\n`, font: fontName, size: 24 }),
+        new TextRun({ text: 'Operator Layanan Operasional,\n\n\n\n\n', font: fontName, size: 24 }),
+        new TextRun({ text: p.name || 'Riki Subagja', font: fontName, size: 24, bold: true }),
+        new TextRun({ text: `\n${p.nip || '199808272025211042'}`, font: fontName, size: 24 })
+    ]
+}));
+
+// Margin Kertas A4 Standar (2.54 cm)
+const doc = new Document({
+    sections: [{
+        properties: {
+            page: {
+                margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 }
+            }
+        },
+        children: children
+    }]
+});
+
+Packer.toBlob(doc).then(blob => {
+    download(blob, `Laporan PPPK Bulan ${info.monthName || 'April'} ${info.year || '2026'} ${p.name || 'Riki Subagja'}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+});
+
 
 @media print {
     .no-print { display: none !important; }
