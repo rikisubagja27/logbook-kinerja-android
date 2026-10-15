@@ -4,167 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#173b2b">
-  <meta name="apple-mobile-web-app-title" content="Logbook">
-
-  <!-- CSS Mencegah Input Terkunci di iOS Safari / PWA -->
-  <style>
-    input, textarea, select, [contenteditable="true"] {
-      -webkit-user-select: auto !important;
-      user-select: auto !important;
-      pointer-events: auto !important;
-    }
-
-    /* Style Laporan Resmi (Font Arial, Rata Kiri-Kanan / Justify, Spasi 1.5) */
-    .report-document {
-      font-family: Arial, "Arial MT", sans-serif !important;
-      text-align: justify !important;
-      text-justify: inter-word;
-      color: #111;
-      line-height: 1.5;
-    }
-
-    .report-document p {
-      text-align: justify !important;
-      line-height: 1.5;
-      margin-bottom: 12px;
-      font-size: 11pt;
-    }
-
-    .report-document h1, .report-document h2, .report-document h3,
-    .report-document h4, .report-document b, .report-document strong {
-      font-family: Arial, "Arial MT", sans-serif !important;
-      font-weight: bold !important;
-    }
-
-    /* Kertas A4 & Margin Standar Laporan (2.54 cm Atas/Kiri) */
-    .a4-paper {
-      background: white;
-      width: 210mm;
-      min-height: 297mm;
-      padding: 25.4mm 20mm 20mm 25.4mm;
-      margin: 15px auto;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      border-radius: 4px;
-      box-sizing: border-box;
-      position: relative;
-    }
-
-    @media print {
-      .no-print { display: none !important; }
-      .page-break { page-break-before: always; break-before: page; }
-      body { background: white; font-size: 11pt; color: #000; }
-      .a4-paper {
-        width: 100%;
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-      }
-      @page {
-        size: A4;
-        margin: 25.4mm 20mm 20mm 25.4mm;
-      }
-    }
-
-    /* Modal Preview Laporan A4 */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      overflow-y: auto;
-      padding: 20px 10px;
-    }
-
-    .modal-header {
-      background: #173b2b;
-      color: white;
-      width: 100%;
-      max-width: 220mm;
-      padding: 12px 20px;
-      border-radius: 10px 10px 0 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 10000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-
-    :root {
-      --g:#173b2b; --g2:#286044; --bg:#f2f5f2; --line:#d9e2da; --muted:#647168; --red:#b42318;
-    }
-    * { box-sizing:border-box; }
-    body { margin:0; background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; color:#17221a; font-size:16px; }
-    header { background:var(--g); color:white; padding:22px 16px calc(18px + env(safe-area-inset-top)); }
-    .brand-head { display:flex; align-items:center; gap:13px; }
-    .brand-logo { width:66px; height:66px; object-fit:cover; border-radius:99px; flex:0 0 66px; border:2px solid rgba(255,255,255,.3); }
-    .brand-copy { min-width:0; }
-    .brand-copy h1 { font-size:22px; line-height:1.3; margin:0 0 5px; }
-    .brand-copy p { margin:0; color:#d9e9de; font-size:13px; }
-    @media(max-width:600px) {
-      .brand-logo { width:58px; height:58px; flex-basis:58px; }
-      .brand-copy h1 { font-size:20px; }
-      .brand-copy p { font-size:12px; }
-      .a4-paper { width:100%; padding:15px; }
-    }
-    .wrap { max-width:1000px; margin:auto; }
-    nav { display:flex; gap:7px; overflow-x:auto; padding:12px; max-width:1000px; margin:auto; }
-    button, .btn { font:inherit; cursor:pointer; border:0; border-radius:10px; padding:11px 14px; font-weight:650; font-size:14px; background:#e5ede6; color:var(--g); white-space:nowrap; transition:all 0.2s; }
-    nav button.active, .primary { background:var(--g2); color:white; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
-    main { max-width:1000px; margin:auto; padding:0 12px 30px; }
-    .tab { display:none; }
-    .tab.active { display:block; }
-    .card { background:white; border:1px solid var(--line); border-radius:15px; padding:16px; margin:10px 0; }
-    h2 { font-size:19px; margin:0 0 14px; }
-    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
-    .field { display:flex; flex-direction:column; gap:7px; min-width:0; }
-    .full { grid-column:1/-1; }
-    label { font-size:14px; font-weight:650; }
-    label .req { color:#c5221f; }
-    input, select, textarea { font:inherit; font-size:16px; width:100%; min-height:45px; border:1px solid #cbd6cc; border-radius:9px; padding:11px; background:white; color:#17221a; }
-    textarea { min-height:95px; resize:vertical; border-radius:12px; }
-    .help { font-size:12px; color:var(--muted); line-height:1.5; }
-    .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
-    .danger { background:#fff0ee; color:var(--red); }
-    .entry { background:white; border:1px solid var(--line); border-radius:12px; padding:13px; margin:10px 0; }
-    .entry h3 { font-size:16px; margin:0 0 5px; }
-    .meta { font-size:12px; color:var(--muted); }
-    .entry p { white-space:pre-wrap; overflow-wrap:anywhere; }
-    table { border-collapse:collapse; width:100%; font-size:11pt; font-family:Arial, "Arial MT", sans-serif; }
-    td, th { border:1px solid #222; padding:8px; text-align:left; vertical-align:top; }
-    th { background:#eaf2eb; font-weight:bold; text-align:center; }
-    .empty { text-align:center; color:var(--muted); padding:20px; }
-    .hide { display:none!important; }
-    .status { font-size:13px; margin:8px 0; color:#425447; overflow-wrap:anywhere; }
-    .status.err { color:var(--red); }
-    a { color:var(--g2); }
-
-    /* Thumbnails Foto Logbook */
-    .photo-preview { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px; margin-top:10px; }
-    .photo-thumb { border:1px solid #d1d5db; border-radius:10px; padding:5px; min-width:0; background:#f9fafb; }
-    .photo-thumb img { width:100%; height:82px; object-fit:cover; border-radius:6px; display:block; }
-    .photo-thumb button { width:100%; padding:5px; margin-top:4px; font-size:12px; }
-
-    /* Layout Laporan Dokumen */
-    .report-cover { display:flex; flex-direction:column; justify-content:space-between; text-align:center; min-height:245mm; padding-top:10mm; }
-    .report-chapter { text-align:center; font-weight:bold; font-size:14pt; margin:20px 0 25px; line-height:1.3; }
-    .report-body h3 { font-size:12pt; font-weight:bold; margin-top:18px; margin-bottom:8px; text-align:left; }
-    .report-photo { max-width:100%; max-height:120mm; object-fit:contain; border-radius:4px; border:1px solid #ddd; }
-    .report-sign { margin-top:40px; text-align:right; font-size:11pt; line-height:1.5; float:right; width:220px; }
-    .btn-edit-inline { padding:3px 8px; font-size:11px; background:#286044; color:white; border-radius:5px; margin-left:6px; border:0; cursor:pointer; }
-  </style>
+  <title>Logbook Kinerja Harian</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <header>
   <div class="wrap brand-head">
-    <img class="brand-logo" src="https://jzeygzghxuxbtyrqcpyy.supabase.co/storage/v1/object/public/logbook-photos/public/logo_kementan.png" alt="Logo Kementan" onerror="this.style.display='none'">
+    <img class="brand-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png/600px-Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png" alt="Logo Kementan">
     <div class="brand-copy">
       <h1>Logbook Kinerja Harian</h1>
       <p>KPS PVT I Manoko · Sistem Pelaporan Resmi Kinerja</p>
@@ -176,20 +23,15 @@
   <!-- AUTH SECTION -->
   <section id="auth" class="card">
     <h2 id="authTitle">Masuk ke Logbook</h2>
-    <p class="help">Gunakan email dan kata sandi akun Anda. Akun baru dapat didaftarkan dari halaman ini.</p>
+    <p class="help">Gunakan email dan kata sandi akun Anda untuk mengakses sistem logbook.</p>
     <div class="grid">
-      <details id="connectionSettings" class="field full" style="display:none!important;margin:0 0 12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Pengaturan koneksi (admin)</summary>
-        <div class="field full"><label for="projectUrl">Supabase Project URL</label><input id="projectUrl" placeholder="https://xxxxxxxx.supabase.co" autocomplete="url"></div>
-        <div class="field full"><label for="anonKey">Supabase anon/public key</label><textarea id="anonKey" style="min-height:72px" placeholder="Publishable/anon key"></textarea></div>
-        <div class="field full"><button id="connect" class="primary">Simpan Pengaturan Koneksi</button></div>
-      </details>
-      <div class="field full"><label for="email">Email</label><input id="email" type="email" autocomplete="username" placeholder="nama@email.com" required></div>
-      <div class="field full"><label for="password">Kata sandi</label><input id="password" type="password" autocomplete="current-password" minlength="6" placeholder="Minimal 6 karakter" required></div>
+      <div class="field full"><label for="email">Email</label><input id="email" type="email" placeholder="nama@email.com" required></div>
+      <div class="field full"><label for="password">Kata Sandi</label><input id="password" type="password" minlength="6" placeholder="Minimal 6 karakter" required></div>
     </div>
     <div class="actions">
       <button id="login" class="primary">Masuk</button>
-      <button id="signup">Daftar akun baru</button>
-      <button id="forgot">Lupa kata sandi</button>
+      <button id="signup">Daftar Akun Baru</button>
+      <button id="forgot">Lupa Kata Sandi</button>
     </div>
     <div id="authStatus" class="status"></div>
   </section>
@@ -197,7 +39,7 @@
   <!-- WORKSPACE SECTION -->
   <section id="workspace" class="hide">
     <div class="card no-print">
-      <div class="actions" style="margin-top:0;justify-content:space-between">
+      <div class="actions" style="margin-top:0; justify-content:space-between; align-items:center;">
         <span id="userLabel" class="help"></span>
         <button id="logout" class="danger">Keluar</button>
       </div>
@@ -234,16 +76,16 @@
             <div class="field"><label for="area">Luas Lokasi Pekerjaan (m²) <span class="req">*</span></label><input id="area" type="number" min="0" step="0.01" required placeholder="Contoh: 700"></div>
 
             <div class="field full">
-              <label>Kategori kegiatan <span class="req">*</span></label>
+              <label>Kategori Kegiatan <span class="req">*</span></label>
               <input id="category" type="hidden" value="">
-              <div id="categoryOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px">
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Pengolahan lahan" style="width:auto;min-width:18px">Pengolahan lahan</label>
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Persiapan tanam" style="width:auto;min-width:18px">Persiapan tanam</label>
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Pemeliharaan tanaman" style="width:auto;min-width:18px">Pemeliharaan tanaman</label>
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Panen" style="width:auto;min-width:18px">Panen</label>
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Pengamatan tanaman" style="width:auto;min-width:18px">Pengamatan tanaman</label>
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Perbaikan sarana prasarana" style="width:auto;min-width:18px">Perbaikan sarana prasarana</label>
-                <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #d1d5db;border-radius:10px"><input type="checkbox" class="category-check" value="Kegiatan lainnya" style="width:auto;min-width:18px">Kegiatan lainnya</label>
+              <div id="categoryOptions" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin-top:6px;">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Pengolahan lahan">Pengolahan lahan</label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Persiapan tanam">Persiapan tanam</label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Pemeliharaan tanaman">Pemeliharaan tanaman</label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Panen">Panen</label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Pengamatan tanaman">Pengamatan tanaman</label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Perbaikan sarana prasarana">Perbaikan sarana prasarana</label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Kegiatan lainnya">Kegiatan lainnya</label>
               </div>
             </div>
 
@@ -285,8 +127,8 @@
       <div class="card">
         <h2>Data Harian</h2>
         <div class="grid no-print">
-          <div class="field"><label for="filterMonth">Filter bulan</label><input id="filterMonth" type="month"></div>
-          <div class="field"><label for="search">Cari uraian/lokasi</label><input id="search" placeholder="Kata kunci"></div>
+          <div class="field"><label for="filterMonth">Filter Bulan</label><input id="filterMonth" type="month"></div>
+          <div class="field"><label for="search">Cari Uraian/Lokasi</label><input id="search" placeholder="Kata kunci"></div>
         </div>
         <div id="list"></div>
       </div>
@@ -297,7 +139,7 @@
       <div class="card no-print">
         <h2>Rekap & Pembuatan Laporan Resmi</h2>
         <div class="grid">
-          <div class="field"><label for="rtype">Jenis laporan</label>
+          <div class="field"><label for="rtype">Jenis Laporan</label>
             <select id="rtype">
               <option value="month">Bulanan</option>
               <option value="quarter">Triwulan</option>
@@ -323,7 +165,7 @@
         </div>
         <div class="actions">
           <button class="primary" id="refreshReport">Tampilkan Ringkasan</button>
-          <button id="btnPreviewReport" style="background:#173b2b;color:white;">👁️ Pratinjau / Preview Laporan A4</button>
+          <button id="btnPreviewReport" style="background:#173b2b; color:white;">👁️ Pratinjau / Preview Laporan A4</button>
           <button id="print">Unduh / Cetak PDF</button>
           <button id="word">Unduh Word (.docx)</button>
           <button id="csv">Unduh CSV</button>
@@ -345,7 +187,7 @@
             <div class="field full"><label>Unit Kerja / Kantor</label><input id="poffice" value="PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN"></div>
             <div class="field full"><label>Atasan / Pembimbing</label><input id="psupervisor"></div>
           </div>
-          <div class="actions"><button class="primary">Simpan Profil</button></div>
+          <div class="actions"><button class="primary" type="submit">Simpan Profil</button></div>
         </form>
         <div id="profileStatus" class="status"></div>
       </div>
@@ -369,517 +211,810 @@
 <!-- MODAL PREVIEW DOKUMEN A4 -->
 <div id="previewModal" class="modal-overlay hide">
   <div class="modal-header">
-    <h3 style="margin:0;font-size:16px;">📄 Pratinjau Laporan Resmi (Format A4)</h3>
-    <div style="display:flex;gap:8px;">
-      <button onclick="window.print()" class="primary" style="padding:6px 12px;font-size:13px;">🖨️ Cetak / Save PDF</button>
-      <button onclick="closePreviewModal()" style="padding:6px 12px;font-size:13px;background:#b42318;color:white;">Tutup</button>
+    <h3 style="margin:0; font-size:15px;">📄 Pratinjau Laporan Resmi (Format A4)</h3>
+    <div style="display:flex; gap:8px;">
+      <button onclick="window.print()" class="primary" style="padding:6px 12px; font-size:12px;">🖨️ Cetak / Save PDF</button>
+      <button onclick="closePreviewModal()" style="padding:6px 12px; font-size:12px; background:#b42318; color:white;">Tutup</button>
     </div>
   </div>
-  <div id="modalPaperContent" style="width:100%;display:flex;flex-direction:column;align-items:center;"></div>
+  <div id="modalPaperContent" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
 </div>
 
+<!-- LIBRARIES -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-<script>
-(()=>{'use strict';
-const $=id=>document.getElementById(id), iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const KEY='logbook_online_config_v1';
-const DEFAULT_SUPABASE_URL='https://jzeygzghxuxbtyrqcpyy.supabase.co';
-const DEFAULT_SUPABASE_KEY='sb_publishable_H6zvX_d1z6nRQEhlZgXvdw_ztq_eS6p';
-let supa=null,user=null,entries=[],profile={name:'Riki Subagja',nip:'199808272025211042',role:'PPPK Paruh Waktu',position:'Operator Layanan Operasional',office:'PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN',supervisor:''},pending={before:[],after:[]};
-
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const dateFmt=s=>s?`${s.slice(8,10)}/${s.slice(5,7)}/${s.slice(0,4)}`:'-';
-
-function msg(id,t,err=false){
-  if($(id)){ $(id).textContent=t; $(id).className='status'+(err?' err':''); }
+<script src="script.js"></script>
+</body>
+</html>
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+  pointer-events: auto !important;
 }
 
-function initClient(){
-  let c;try{c=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
-  if(!c||!c.url||!c.key)c={url:DEFAULT_SUPABASE_URL,key:DEFAULT_SUPABASE_KEY};
-  if($('projectUrl'))$('projectUrl').value=c.url;
-  if($('anonKey'))$('anonKey').value=c.key;
-  try{supa=window.supabase.createClient(c.url,c.key)}catch(e){msg('authStatus','Koneksi gagal: '+(e.message||e),true)}
+:root {
+  --g: #173b2b; --g2: #286044; --bg: #f2f5f2; --line: #d9e2da; --muted: #647168; --red: #b42318;
 }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: #17221a; font-size: 15px; line-height: 1.4; }
+header { background: var(--g); color: white; padding: 18px 16px; }
+.brand-head { display: flex; align-items: center; gap: 12px; max-width: 1000px; margin: auto; }
+.brand-logo { width: 56px; height: 56px; object-fit: contain; border-radius: 50%; background: white; padding: 3px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; }
+.brand-copy h1 { font-size: 20px; margin: 0 0 3px; line-height: 1.2; }
+.brand-copy p { margin: 0; font-size: 12px; color: #d9e9de; }
+main { max-width: 1000px; margin: auto; padding: 10px 12px 30px; }
+nav { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; max-width: 1000px; margin: auto; }
+button, .btn { font: inherit; cursor: pointer; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 600; font-size: 13px; background: #e5ede6; color: var(--g); white-space: nowrap; transition: 0.2s; }
+nav button.active, .primary { background: var(--g2); color: white; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.card { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 10px 0; }
+h2 { font-size: 18px; margin: 0 0 12px; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.full { grid-column: 1 / -1; }
+label { font-size: 13px; font-weight: 600; }
+label .req { color: var(--red); }
+input, select, textarea { font: inherit; font-size: 14px; width: 100%; padding: 10px; border: 1px solid #cbd6cc; border-radius: 8px; background: white; color: #17221a; }
+textarea { min-height: 80px; resize: vertical; }
+.help { font-size: 12px; color: var(--muted); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.danger { background: #fff0ee; color: var(--red); }
+.entry { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 10px 0; }
+.entry h3 { font-size: 15px; margin: 0 0 4px; }
+.meta { font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 11pt; font-family: Arial, sans-serif; }
+td, th { border: 1px solid #222; padding: 7px; text-align: left; vertical-align: top; }
+th { background: #eaf2eb; font-weight: bold; text-align: center; }
+.hide { display: none !important; }
+.status { font-size: 13px; margin: 8px 0; color: var(--g2); }
+.status.err { color: var(--red); }
 
-async function authAction(mode){
-  try{
-    let email=$('email').value.trim(),password=$('password').value;
-    if(!email)throw Error('Masukkan email.');
-    if(mode!=='forgot'&&!password)throw Error('Masukkan kata sandi.');
-    msg('authStatus','Memproses...');
-    let r;
-    if(mode==='login')r=await supa.auth.signInWithPassword({email,password});
-    else if(mode==='signup')r=await supa.auth.signUp({email,password});
-    else r=await supa.auth.resetPasswordForEmail(email);
-    if(r.error)throw r.error;
-    user=r.data.user;await enterApp()
-  }catch(e){msg('authStatus',e.message||'Autentikasi gagal.',true)}
+/* Thumbnails Foto Logbook */
+.photo-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 8px; }
+.photo-thumb { border: 1px solid #d1d5db; border-radius: 8px; padding: 4px; background: #f9fafb; }
+.photo-thumb img { width: 100%; height: 75px; object-fit: cover; border-radius: 4px; display: block; }
+.photo-thumb button { width: 100%; padding: 4px; margin-top: 4px; font-size: 11px; }
+
+/* Layout Dokumen Laporan Resmi & Kertas A4 */
+.report-document { font-family: Arial, sans-serif !important; text-align: justify !important; color: #111; line-height: 1.5; }
+.report-document p { text-align: justify !important; line-height: 1.5; margin-bottom: 10px; font-size: 11pt; }
+.a4-paper { background: white; width: 210mm; min-height: 297mm; padding: 25.4mm 20mm 20mm 25.4mm; margin: 15px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.15); box-sizing: border-box; position: relative; }
+.report-cover { display: flex; flex-direction: column; justify-content: space-between; text-align: center; min-height: 240mm; }
+.report-chapter { text-align: center; font-weight: bold; font-size: 14pt; margin: 15px 0 20px; line-height: 1.3; }
+.report-body h3 { font-size: 12pt; font-weight: bold; margin-top: 16px; margin-bottom: 6px; text-align: left; }
+.report-photo { max-width: 100%; max-height: 110mm; object-fit: contain; border-radius: 4px; border: 1px solid #ccc; }
+.report-sign { margin-top: 35px; text-align: right; font-size: 11pt; float: right; width: 220px; }
+.btn-edit-inline { padding: 3px 7px; font-size: 11px; background: #286044; color: white; border-radius: 4px; border: 0; cursor: pointer; }
+
+/* Modal Overlay Preview A4 */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 9999; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 15px 10px; }
+.modal-header { background: var(--g); color: white; width: 100%; max-width: 220mm; padding: 10px 16px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10000; }
+
+@media print {
+  .no-print { display: none !important; }
+  .page-break { page-break-before: always; break-before: page; }
+  body { background: white; }
+  .a4-paper { width: 100%; box-shadow: none; padding: 0; margin: 0; }
+  @page { size: A4; margin: 25.4mm 20mm 20mm 25.4mm; }
 }
-
-if($('login'))$('login').onclick=()=>authAction('login');
-if($('signup'))$('signup').onclick=()=>authAction('signup');
-if($('forgot'))$('forgot').onclick=()=>authAction('forgot');
-
-async function enterApp(){
-  if(!supa||!user)return;
-  $('auth').classList.add('hide');$('workspace').classList.remove('hide');$('userLabel').textContent='Masuk sebagai '+(user.email||'pengguna');
-  await loadProfile();await loadEntries();renderAll()
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+  .a4-paper { width: 100%; padding: 15px; }
 }
+(() => {
+  'use strict';
 
-if($('logout'))$('logout').onclick=async()=>{if(supa)await supa.auth.signOut();user=null;entries=[];$('workspace').classList.add('hide');$('auth').classList.remove('hide')};
+  const $ = id => document.getElementById(id);
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const KEY = 'logbook_online_config_v1';
+  const DEFAULT_SUPABASE_URL = 'https://jzeygzghxuxbtyrqcpyy.supabase.co';
+  const DEFAULT_SUPABASE_KEY = 'sb_publishable_H6zvX_d1z6nRQEhlZgXvdw_ztq_eS6p';
 
-function tab(id){
-  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.id===id));
-  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
-  if(id==='reports')report();
-}
-function hookTabs(){document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.tab))}
-
-async function loadProfile(){
-  const {data}=await supa.from('logbook_profiles').select('*').eq('user_id',user.id).maybeSingle();
-  if(data)profile={name:data.name||'Riki Subagja',nip:data.nip||'199808272025211042',role:data.role||'PPPK Paruh Waktu',position:data.position||'Operator Layanan Operasional',office:data.office||'PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN',supervisor:data.supervisor||''};
-  setProfile()
-}
-
-function setProfile(){
-  if($('pname'))$('pname').value=profile.name;
-  if($('pnip'))$('pnip').value=profile.nip||'199808272025211042';
-  if($('prole'))$('prole').value=profile.role;
-  if($('pposition'))$('pposition').value=profile.position;
-  if($('poffice'))$('poffice').value=profile.office;
-  if($('psupervisor'))$('psupervisor').value=profile.supervisor
-}
-
-async function loadEntries(){
-  msg('settingsStatus','Mengambil data dari server...');
-  const {data,error}=await supa.from('logbook_entries').select('*').order('work_date',{ascending:true});
-  if(error)throw error;
-  entries=(data||[]).map(x=>({...x,id:x.id,date:x.work_date,attendance:x.attendance,start:x.start_time,end:x.end_time,activity:x.activity,location:x.location,area:x.area,category:x.category,result:x.result||'',notes:x.notes||'',before_path:x.before_path,after_path:x.after_path}));
-  msg('settingsStatus',`Data dimuat: ${entries.length} catatan.`)
-}
-
-function normalizeTime(raw){
-  let t=String(raw??'').trim().replace(/[.٫]/g,':');
-  if(!t)return null;
-  let m=t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if(!m)return null;
-  return String(Number(m[1])).padStart(2,'0')+':'+String(Number(m[2])).padStart(2,'0')
-}
-
-async function uploadPhoto(file,oldPath,prefix){
-  if(!file)return oldPath||null;
-  let ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-  let path=`${user.id}/${Date.now()}_${prefix}.${ext}`;
-  const {error}=await supa.storage.from('logbook-photos').upload(path,file,{upsert:false,contentType:file.type});
-  if(error)throw error;
-  return path
-}
-
-function storedPaths(value){
-  if(!value)return [];
-  try{const parsed=JSON.parse(value);if(Array.isArray(parsed))return parsed.filter(Boolean)}catch(e){}
-  return [value].filter(Boolean)
-}
-function storedValue(paths){return JSON.stringify(paths||[])}
-
-function renderPhotoPreview(which){
-  const target=$(which+'Preview');
-  if(!target) return;
-  const files=pending[which]||[];
-  target.innerHTML='';
-  files.forEach((item,index)=>{
-    const url=item.url||(item.file?URL.createObjectURL(item.file):'');
-    const card=document.createElement('div');
-    card.className='photo-thumb';
-    card.innerHTML=`<img src="${url}" alt="Foto ${which}"><button type="button" data-remove-photo="${which}" data-index="${index}">Hapus</button>`;
-    target.appendChild(card)
-  });
-}
-
-function addPhotoFiles(which,fileList){
-  for(const file of [...fileList]){
-    if(pending[which].length>=10)break;
-    pending[which].push({file,name:file.name})
-  }
-  renderPhotoPreview(which)
-}
-
-async function loadExistingPhotoPreviews(which,value){
-  const paths=storedPaths(value);
-  for(let p of paths){
-    try{
-      const {data}=await supa.storage.from('logbook-photos').createSignedUrl(p,900);
-      if(data?.signedUrl){
-        let item=pending[which].find(x=>x.path===p);
-        if(item)item.url=data.signedUrl
-      }
-    }catch(e){}
-  }
-  renderPhotoPreview(which)
-}
-
-async function uploadPhotoSet(which,oldValue,prefix,newUploads){
-  const oldPaths=storedPaths(oldValue);
-  const chosen=pending[which]||[];
-  if(!chosen.length)return oldPaths;
-  const paths=chosen.filter(x=>x.path).map(x=>x.path);
-  for(let i=0;i<chosen.length;i++){
-    const item=chosen[i];
-    if(item.path)continue;
-    const path=await uploadPhoto(item.file,null,`${prefix}_${Date.now()}_${i}`);
-    paths.push(path);newUploads.push(path)
-  }
-  return paths
-}
-
-function setupPhotoInputs(){
-  for(const which of ['before','after']){
-    if($(which+'CameraBtn')) $(which+'CameraBtn').onclick=()=>$(which+'Camera').click();
-    if($(which+'GalleryBtn')) $(which+'GalleryBtn').onclick=()=>$(which+'Gallery').click();
-    if($(which+'Camera'))$(which+'Camera').onchange=e=>{addPhotoFiles(which,e.target.files);e.target.value=''};
-    if($(which+'Gallery'))$(which+'Gallery').onchange=e=>{addPhotoFiles(which,e.target.files);e.target.value=''}
-  }
-}
-
-function selectedCategories(){return [...document.querySelectorAll('.category-check:checked')].map(el=>el.value)}
-function setCategories(value){
-  const vals=Array.isArray(value)?value:String(value||'').split(/\s*,\s*/).filter(Boolean);
-  document.querySelectorAll('.category-check').forEach(el=>{el.checked=vals.includes(el.value)});
-  if($('category'))$('category').value=selectedCategories().join(', ')
-}
-
-if($('entryForm')){$('entryForm').onsubmit=async e=>{
-    e.preventDefault();
-    let old=entries.find(x=>x.id===$('editId').value),newUploads=[];
-    try{
-      let start=normalizeTime($('start').value),end=normalizeTime($('end').value);
-      msg('formStatus','Menyimpan data dan mengunggah foto...');
-      let beforePaths=await uploadPhotoSet('before',old?.before_path,'before',newUploads);
-      let afterPaths=await uploadPhotoSet('after',old?.after_path,'after',newUploads);
-      
-      let row={
-        user_id:user.id,
-        work_date:$('date').value,
-        attendance:$('attendance').value,
-        start_time:start,
-        end_time:end,
-        activity:$('activity').value.trim(),
-        location:$('location').value.trim(),
-        area:Number($('area').value),
-        category:selectedCategories().join(', '),
-        notes:$('notes').value.trim(),
-        duration_hours:2,
-        before_path:storedValue(beforePaths),
-        after_path:storedValue(afterPaths)
-      };
-      let res=old?await supa.from('logbook_entries').update(row).eq('id',old.id).select().single():await supa.from('logbook_entries').insert(row).select().single();
-      if(res.error)throw res.error;
-      reset();await loadEntries();renderAll();msg('formStatus','Kegiatan berhasil disimpan.')
-    }catch(err){msg('formStatus',err.message||'Gagal menyimpan.',true)}
+  let supa = null;
+  let user = null;
+  let entries = [];
+  let profile = {
+    name: 'Riki Subagja',
+    nip: '199808272025211042',
+    role: 'PPPK Paruh Waktu',
+    position: 'Operator Layanan Operasional',
+    office: 'PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN',
+    supervisor: ''
   };
-}
+  let pending = { before: [], after: [] };
 
-function reset(){
-  if($('entryForm'))$('entryForm').reset();
-  setCategories('');
-  if($('editId'))$('editId').value='';
-  pending={before:[],after:[]};
-  if($('date'))$('date').value=iso(new Date());
-  if($('beforePreview'))$('beforePreview').innerHTML='';
-  if($('afterPreview'))$('afterPreview').innerHTML='';
-  if($('formHeading'))$('formHeading').textContent='Form Logbook Kinerja Harian';
-  if($('saveBtn'))$('saveBtn').textContent='Simpan Kegiatan'
-}
-if($('resetBtn'))$('resetBtn').onclick=reset;
-setupPhotoInputs();
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const dateFmt = s => s ? `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : '-';
 
-window.editEntry=function(id){
-  let x=entries.find(e=>e.id===id);if(!x)return;
-  Object.entries({editId:x.id,date:x.date,attendance:x.attendance,start:x.start,end:x.end,activity:x.activity,location:x.location,area:x.area,notes:x.notes}).forEach(([k,v])=>{if($(k))$(k).value=v??''});
-  setCategories(x.category||'');
-  pending={
-    before:storedPaths(x.before_path).map(path=>({path,name:'Foto tersimpan',url:''})),
-    after:storedPaths(x.after_path).map(path=>({path,name:'Foto tersimpan',url:''}))
-  };
-  renderPhotoPreview('before');renderPhotoPreview('after');
-  loadExistingPhotoPreviews('before',x.before_path);loadExistingPhotoPreviews('after',x.after_path);
-  if($('formHeading'))$('formHeading').textContent='Ubah Logbook';
-  if($('saveBtn'))$('saveBtn').textContent='Simpan Perubahan';
-  if($('previewModal')) closePreviewModal();
-  tab('form');window.scrollTo(0,0)
-};
-
-async function del(id){
-  if(!confirm('Hapus catatan ini?'))return;
-  const {error}=await supa.from('logbook_entries').delete().eq('id',id);
-  if(!error){await loadEntries();renderAll()}
-}
-
-function renderList(){
-  let m=$('filterMonth')?$('filterMonth').value:'',q=$('search')?$('search').value.toLowerCase().trim():'';
-  let a=entries.filter(x=>(!m||x.date.startsWith(m))&&(!q||[x.activity,x.location,x.notes].join(' ').toLowerCase().includes(q)));
-  if($('list'))$('list').innerHTML=a.length?a.map(x=>`<div class="entry"><h3>${esc(x.activity)}</h3><div class="meta">${dateFmt(x.date)} · ${esc(x.attendance)} · ${esc(x.start)}–${esc(x.end)}</div><p><b>Lokasi:</b> ${esc(x.location)} (${esc(x.area)} m²)</p>${x.notes?`<p><b>Keterangan:</b> ${esc(x.notes)}</p>`:''}<div class="actions"><button onclick="editEntry('${esc(x.id)}')">Ubah</button><button class="danger" onclick="del('${esc(x.id)}')">Hapus</button></div></div>`).join(''):'<div class="empty">Belum ada catatan.</div>';
-}
-
-function selected(){
-  let type=$('rtype')?$('rtype').value:'month',y=Number($('ryear')?$('ryear').value:2026),m=Number($('rmonth')?$('rmonth').value:1),q=Number($('rquarter')?$('rquarter').value:1);
-  return entries.filter(x=>{
-    if(type==='all')return true;
-    let d=new Date(x.date+'T12:00:00');
-    if(d.getFullYear()!==y)return false;
-    if(type==='year')return true;
-    if(type==='month')return d.getMonth()+1===m;
-    if(type==='quarter')return Math.floor(d.getMonth()/3)+1===q;
-    return true
-  }).sort((a,b)=>a.date.localeCompare(b.date))
-}
-
-function periodInfo(){
-  let t=$('rtype')?$('rtype').value:'month',y=Number($('ryear')?$('ryear').value:2026),m=Number($('rmonth')?$('rmonth').value:1),q=Number($('rquarter')?$('rquarter').value:1);
-  let months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  return {type:t,year:y,month:m,quarter:q,monthName:months[m-1],label:t==='all'?'Semua Data':t==='year'?'Tahun '+y:t==='month'?'Bulan '+months[m-1]+' '+y:'Triwulan '+['I','II','III','IV'][q-1]+' Tahun '+y}
-}
-
-async function getReportPhotosChronological(a){
-  let photos=[];
-  for(let x of a){
-    let beforePaths=storedPaths(x.before_path);
-    let afterPaths=storedPaths(x.after_path);
-    for(let path of beforePaths){
-      try{
-        let {data}=await supa.storage.from('logbook-photos').createSignedUrl(path,900);
-        if(data?.signedUrl){
-          photos.push({
-            id: x.id,
-            date: x.date,
-            url: data.signedUrl,
-            caption: `${x.activity} (Sebelum Kegiatan - ${dateFmt(x.date)})`,
-            location: x.location
-          });
-        }
-      }catch(e){}
-    }
-    for(let path of afterPaths){
-      try{
-        let {data}=await supa.storage.from('logbook-photos').createSignedUrl(path,900);
-        if(data?.signedUrl){
-          photos.push({
-            id: x.id,
-            date: x.date,
-            url: data.signedUrl,
-            caption: `${x.activity} (Sesudah Kegiatan - ${dateFmt(x.date)})`,
-            location: x.location
-          });
-        }
-      }catch(e){}
+  function msg(id, t, err = false) {
+    if ($(id)) {$(id).textContent = t;
+      $(id).className = 'status' + (err ? ' err' : '');
     }
   }
-  return photos;
-}
 
-function reportDocHtml(a, photos=[]){
-  let p=profile, info=periodInfo();
-  let logoUrl="https://jzeygzghxuxbtyrqcpyy.supabase.co/storage/v1/object/public/logbook-photos/public/logo_kementan.png";
+  function initClient() {
+    let c;
+    try { c = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (!c || !c.url || !c.key) c = { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
+    try {
+      supa = window.supabase.createClient(c.url, c.key);
+    } catch (e) {
+      msg('authStatus', 'Koneksi gagal: ' + (e.message || e), true);
+    }
+  }
 
-  let table1Rows=a.map((x,i)=>`
-    <tr>
-      <td style="text-align:center;vertical-align:top;">${i+1}</td>
-      <td style="vertical-align:top;white-space:nowrap;">${dateFmt(x.date)}</td>
-      <td style="vertical-align:top;text-align:justify;">
-        <b>• ${esc(x.activity)}</b>
-        <button class="no-print btn-edit-inline" onclick="editEntry('${esc(x.id)}')">✏️ Edit</button>
-      </td>
-      <td style="vertical-align:top;">• ${esc(x.location)}${x.notes?' ('+esc(x.notes)+')':''}</td>
-    </tr>
-  `).join('');
+  async function authAction(mode) {
+    try {
+      let email = $('email').value.trim();
+      let password = $('password').value;
+      if (!email) throw Error('Masukkan email.');
+      if (mode !== 'forgot' && !password) throw Error('Masukkan kata sandi.');
+      msg('authStatus', 'Memproses...');
+      let r;
+      if (mode === 'login') r = await supa.auth.signInWithPassword({ email, password });
+      else if (mode === 'signup') r = await supa.auth.signUp({ email, password });
+      else r = await supa.auth.resetPasswordForEmail(email);
 
-  let table2Rows=photos.map((ph,i)=>`
-    <tr>
-      <td style="width:50%;text-align:center;vertical-align:middle;padding:10px;">
-        <img class="report-photo" src="${ph.url}" alt="Dokumentasi ${i+1}">
-      </td>
-      <td style="vertical-align:top;padding:10px;text-align:justify;">
-        <b>Foto ${i+1}</b><br>
-        <b>Tanggal:</b> ${dateFmt(ph.date)}<br>
-        <b>Lokasi:</b> ${esc(ph.location)}<br>
-        <b>Keterangan:</b> ${esc(ph.caption)}
-        <br><br>
-        <button class="no-print btn-edit-inline" onclick="editEntry('${esc(ph.id)}')">✏️ Edit Logbook / Foto Ini</button>
-      </td>
-    </tr>
-  `).join('');
+      if (r.error) throw r.error;
+      user = r.data.user;
+      await enterApp();
+    } catch (e) {
+      msg('authStatus', e.message || 'Autentikasi gagal.', true);
+    }
+  }
 
-  return `
-    <div class="report-document">
-      <section class="a4-paper report-cover">
-        <div>
-          <h1 style="font-size:18pt;margin:0;font-weight:bold;">LAPORAN KINERJA</h1>
-          <h2 style="font-size:15pt;margin:8px 0;font-weight:bold;">PELAKSANAAN TUGAS OPERASIONAL KANTOR</h2>
-          <h2 style="font-size:14pt;margin:0;font-weight:bold;">BULAN ${esc(info.monthName.toUpperCase())} TAHUN ${esc(String(info.year))}</h2>
-        </div>
-        <div style="margin:20mm 0;text-align:center;">
-          <img src="${logoUrl}" style="width:110px;height:110px;object-fit:contain;" alt="Logo Kementan" onerror="this.style.display='none'">
-        </div>
-        <div>
-          <p style="text-align:center!important;margin:0;font-size:12pt;">Disusun oleh :</p>
-          <h3 style="font-size:13pt;margin:5px 0;font-weight:bold;">${esc(p.name.toUpperCase())}</h3>
-          <p style="text-align:center!important;margin:0;font-size:11pt;"><b>NIP. ${esc(p.nip||'199808272025211042')}</b></p>
-          <p style="text-align:center!important;margin:3px 0 25px;font-size:11pt;">${esc(p.role)}</p>
-          
-          <h3 style="font-size:12pt;margin:0;font-weight:bold;text-align:center!important;">${esc(p.office.toUpperCase())}</h3>
-          <h3 style="font-size:12pt;margin:5px 0 0;font-weight:bold;text-align:center!important;">${esc(String(info.year))}</h3>
-        </div>
-      </section>
+  if ($('login'))$('login').onclick = () => authAction('login');
+  if ($('signup'))$('signup').onclick = () => authAction('signup');
+  if ($('forgot'))$('forgot').onclick = () => authAction('forgot');
 
-      <section class="a4-paper report-body page-break">
-        <h2 class="report-chapter">BAB I<br>PENDAHULUAN</h2>
-        
-        <h3>1.1 LATAR BELAKANG</h3>
-        <p>Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional dan pelayanan perkantoran secara efektif, tertib, dan berkesinambungan. Salah satu bentuk dukungan tersebut dilaksanakan melalui penempatan PPPK Paruh Waktu pada jabatan Operator Layanan Operasional.</p>
-        <p>PPPK Paruh Waktu pada jabatan tersebut memiliki peran dalam membantu pelaksanaan kegiatan administrasi, layanan internal, pengelolaan kebutuhan umum, penataan dokumen, pengelolaan sarana dan prasarana, serta dukungan terhadap berbagai kegiatan kedinasan. Pelaksanaan tugas tersebut diperlukan untuk memastikan kegiatan operasional kantor dapat berjalan dengan baik dan memberikan pelayanan yang optimal kepada pegawai maupun unit kerja. Sejalan dengan kebutuhan organisasi, pelaksanaan tugas PPPK Paruh Waktu perlu diarahkan secara jelas berdasarkan peran, tanggung jawab, dan hasil yang diharapkan. Oleh karena itu, diperlukan uraian mengenai ruang lingkup pekerjaan dan hasil pelaksanaan sebagai dasar dalam pengelolaan, pemantauan, dan evaluasi kinerja PPPK Paruh Waktu.</p>
+  async function enterApp() {
+    if (!supa || !user) return;
+    $('auth').classList.add('hide');
+    $('workspace').classList.remove('hide');$('userLabel').textContent = 'Masuk sebagai ' + (user.email || 'pengguna');
+    await loadProfile();
+    await loadEntries();
+    renderAll();
+  }
 
-        <h3>1.2 TUJUAN</h3>
-        <p>Tujuan penyusunan laporan pelaksanaan tugas dan fungsi jabatan Operator Layanan Operasional, adalah sebagai bentuk pertanggungjawaban kinerja pegawai di lingkungan Pusat Pelindungan Varietas Tanaman dan Perizinan Pertanian, sesuai dengan uraian tugas yang tercantum dalam Matriks Peran Hasil (MPH) yang ditetapkan.</p>
-
-        <h3>1.3 WAKTU PELAKSANAAN</h3>
-        <p>Kegiatan Operator Layanan Operasional dilaksanakan di Kebun Pemeriksaan Substantif PVT I Manoko pada satuan Kerja Kantor Pusat Pusat Pelindungan Varietas Tanaman dan Perizinan Pertanian (PVTPP) pada periode Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}.</p>
-      </section>
-
-      <section class="a4-paper report-body page-break">
-        <h2 class="report-chapter">BAB II<br>AKUNTABILITAS KINERJA</h2>
-        
-        <h3>2.1 HASIL PELAKSANAAN</h3>
-        <p>Kegiatan Operator Layanan Operasional</p>
-        <p><b>Tabel 1. Rincian kegiatan operator layanan operasional Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}</b></p>
-        
-        <table>
-          <thead>
-            <tr>
-              <th style="width:6%">No.</th>
-              <th style="width:18%">Tanggal</th>
-              <th style="width:48%">Rincian Pekerjaan</th>
-              <th style="width:28%">Keterangan</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${table1Rows || '<tr><td colspan="4" style="text-align:center;">Belum ada data kegiatan pada periode ini.</td></tr>'}
-          </tbody>
-        </table>
-      </section>
-
-      <section class="a4-paper report-body page-break">
-        <h3>DOKUMENTASI KEGIATAN</h3>
-        <p><b>Tabel 2. Dokumentasi foto kegiatan secara berurutan Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}</b></p>
-        
-        <table>
-          <thead>
-            <tr>
-              <th style="width:50%">Foto Dokumentasi</th>
-              <th style="width:50%">Keterangan Kegiatan</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${table2Rows || '<tr><td colspan="2" style="text-align:center;">Tidak ada foto dokumentasi pada periode ini.</td></tr>'}
-          </tbody>
-        </table>
-      </section>
-
-      <section class="a4-paper report-body page-break">
-        <h2 class="report-chapter">BAB III<br>PENUTUP</h2>
-        
-        <h3>3.1 KESIMPULAN</h3>
-        <p>Pada bulan ${esc(info.monthName)} tahun ${esc(String(info.year))} secara umum kegiatan pelaksanaan tugas PPPK Paruh Waktu jabatan Operator Layanan Operasional telah mendukung kelancaran operasional KPS PVT I Manoko. Kegiatan utama meliputi pengolahan lahan, pemeliharaan, penyiraman, penyiangan dan pengendalian gulma, panen dan penanganan hasil panen, serta pelaksanaan uji BUSS, pembersihan area kerja, pemeliharaan sarana pendukung, dan dukungan kegiatan lainnya yang berhubungan dengan kegiatan operasional kebun. Secara umum kegiatan terlaksana secara tertib, efektif, dan sesuai dengan tugas serta mendukung pencapaian tujuan dan kelancaran tugas organisasi.</p>
-
-        <h3>3.2 SARAN</h3>
-        <p>Demikian laporan ini disampaikan. Atas perhatian dan kerjasamanya, diucapkan terima kasih.</p>
-
-        <div class="report-sign">
-          <p>Bandung Barat, ${a.length ? dateFmt(a[a.length-1].date) : '30 ' + info.monthName + ' ' + info.year}<br>Operator Layanan Operasional,</p>
-          <br><br><br><br>
-          <p><b>${esc(p.name)}</b><br>NIP. ${esc(p.nip||'199808272025211042')}</p>
-        </div>
-        <div style="clear:both;"></div>
-      </section>
-    </div>
-  `;
-}
-
-async function report(){
-  let a=selected();
-  let photos=await getReportPhotosChronological(a);
-  if($('reportOutput'))$('reportOutput').innerHTML=reportDocHtml(a,photos);
-}
-
-if($('btnPreviewReport')){$('btnPreviewReport').onclick=async()=>{
-    let a=selected();
-    let photos=await getReportPhotosChronological(a);
-    if($('modalPaperContent'))$('modalPaperContent').innerHTML=reportDocHtml(a,photos);
-    if($('previewModal'))$('previewModal').classList.remove('hide');
-    document.body.style.overflow='hidden';
-  };
-}
-
-window.closePreviewModal=function(){
-  if($('previewModal'))$('previewModal').classList.add('hide');
-  document.body.style.overflow='auto';
-};
-
-function renderAll(){renderList();report()}
-
-if($('filterMonth'))$('filterMonth').oninput=renderList;
-if($('search'))$('search').oninput=renderList;
-if($('rtype')){$('rtype').onchange=()=>{
-    let t=$('rtype').value;
-    if($('monthBox'))$('monthBox').classList.toggle('hide',t!=='month');
-    if($('quarterBox'))$('quarterBox').classList.toggle('hide',t!=='quarter');
-    report()
-  };
-}
-if($('refreshReport'))$('refreshReport').onclick=report;
-if($('print'))$('print').onclick=()=>{report();window.print()};
-
-if($('profileForm')){$('profileForm').onsubmit=async e=>{
-    e.preventDefault();
-    profile={
-      name:$('pname').value.trim(),
-      nip:$('pnip')?$('pnip').value.trim():'199808272025211042',
-      role:$('prole').value.trim(),
-      position:$('pposition').value.trim(),
-      office:$('poffice').value.trim(),
-      supervisor:$('psupervisor').value.trim()
+  if ($('logout')) {$('logout').onclick = async () => {
+      if (supa) await supa.auth.signOut();
+      user = null;
+      entries = [];
+      $('workspace').classList.add('hide');$('auth').classList.remove('hide');
     };
-    try{
-      const {error}=await supa.from('logbook_profiles').upsert({user_id:user.id,...profile},{onConflict:'user_id'});
-      if(error)throw error;
-      msg('profileStatus','Profil berhasil disimpan.')
-    }catch(e){msg('profileStatus',e.message,true)}
+  }
+
+  function tab(id) {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.id === id));
+    document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x.dataset.tab === id));
+    if (id === 'reports') report();
+  }
+
+  function hookTabs() {
+    document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
+  }
+
+  async function loadProfile() {
+    const { data } = await supa.from('logbook_profiles').select('*').eq('user_id', user.id).maybeSingle();
+    if (data) {
+      profile = {
+        name: data.name || 'Riki Subagja',
+        nip: data.nip || '199808272025211042',
+        role: data.role || 'PPPK Paruh Waktu',
+        position: data.position || 'Operator Layanan Operasional',
+        office: data.office || 'PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN',
+        supervisor: data.supervisor || ''
+      };
+    }
+    setProfile();
+  }
+
+  function setProfile() {
+    if ($('pname'))$('pname').value = profile.name;
+    if ($('pnip'))$('pnip').value = profile.nip || '199808272025211042';
+    if ($('prole'))$('prole').value = profile.role;
+    if ($('pposition'))$('pposition').value = profile.position;
+    if ($('poffice'))$('poffice').value = profile.office;
+    if ($('psupervisor'))$('psupervisor').value = profile.supervisor;
+  }
+
+  async function loadEntries() {
+    msg('settingsStatus', 'Mengambil data dari server...');
+    const { data, error } = await supa.from('logbook_entries').select('*').order('work_date', { ascending: true });
+    if (error) throw error;
+    entries = (data || []).map(x => ({
+      ...x,
+      id: x.id,
+      date: x.work_date,
+      attendance: x.attendance,
+      start: x.start_time,
+      end: x.end_time,
+      activity: x.activity,
+      location: x.location,
+      area: x.area,
+      category: x.category,
+      result: x.result || '',
+      notes: x.notes || '',
+      before_path: x.before_path,
+      after_path: x.after_path
+    }));
+    msg('settingsStatus', `Data dimuat: ${entries.length} catatan.`);
+  }
+
+  function normalizeTime(raw) {
+    let t = String(raw ?? '').trim().replace(/[.٫]/g, ':');
+    if (!t) return null;
+    let m = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (!m) return null;
+    return String(Number(m[1])).padStart(2, '0') + ':' + String(Number(m[2])).padStart(2, '0');
+  }
+
+  async function uploadPhoto(file, oldPath, prefix) {
+    if (!file) return oldPath || null;
+    let ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    let path = `${user.id}/${Date.now()}_${prefix}.${ext}`;
+    const { error } = await supa.storage.from('logbook-photos').upload(path, file, { upsert: false, contentType: file.type });
+    if (error) throw error;
+    return path;
+  }
+
+  function storedPaths(value) {
+    if (!value) return [];
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    } catch (e) {}
+    return [value].filter(Boolean);
+  }
+
+  function storedValue(paths) {
+    return JSON.stringify(paths || []);
+  }
+
+  function renderPhotoPreview(which) {
+    const target = $(which + 'Preview');
+    if (!target) return;
+    const files = pending[which] || [];
+    target.innerHTML = '';
+    files.forEach((item, index) => {
+      const url = item.url || (item.file ? URL.createObjectURL(item.file) : '');
+      const card = document.createElement('div');
+      card.className = 'photo-thumb';
+      card.innerHTML = `<img src="${url}" alt="Foto ${which}"><button type="button" onclick="removePendingPhoto('${which}', ${index})">Hapus</button>`;
+      target.appendChild(card);
+    });
+  }
+
+  window.removePendingPhoto = function(which, index) {
+    pending[which].splice(index, 1);
+    renderPhotoPreview(which);
   };
-}
 
-if($('reload'))$('reload').onclick=async()=>{try{await loadEntries();renderAll()}catch(e){msg('settingsStatus',e.message,true)}};
+  function addPhotoFiles(which, fileList) {
+    for (const file of [...fileList]) {
+      if (pending[which].length >= 10) break;
+      pending[which].push({ file, name: file.name });
+    }
+    renderPhotoPreview(which);
+  }
 
-const today=new Date();
-if($('date'))$('date').value=iso(today);
-if($('filterMonth'))$('filterMonth').value=iso(today).slice(0,7);
-if($('ryear'))$('ryear').value=today.getFullYear();
-if($('rmonth'))$('rmonth').value=today.getMonth()+1;
+  async function loadExistingPhotoPreviews(which, value) {
+    const paths = storedPaths(value);
+    for (let p of paths) {
+      try {
+        const { data } = await supa.storage.from('logbook-photos').createSignedUrl(p, 900);
+        if (data?.signedUrl) {
+          let item = pending[which].find(x => x.path === p);
+          if (item) item.url = data.signedUrl;
+        }
+      } catch (e) {}
+    }
+    renderPhotoPreview(which);
+  }
 
-hookTabs();
-initClient();
+  async function uploadPhotoSet(which, oldValue, prefix, newUploads) {
+    const oldPaths = storedPaths(oldValue);
+    const chosen = pending[which] || [];
+    if (!chosen.length) return oldPaths;
+    const paths = chosen.filter(x => x.path).map(x => x.path);
+    for (let i = 0; i < chosen.length; i++) {
+      const item = chosen[i];
+      if (item.path) continue;
+      const path = await uploadPhoto(item.file, null, `${prefix}_${Date.now()}_${i}`);
+      paths.push(path);
+      newUploads.push(path);
+    }
+    return paths;
+  }
 
-if(window.supabase?.createClient){
-  try{
-    let c=JSON.parse(localStorage.getItem(KEY)||'null')||{url:DEFAULT_SUPABASE_URL,key:DEFAULT_SUPABASE_KEY};
-    supa=window.supabase.createClient(c.url,c.key);
-    supa.auth.getSession().then(({data})=>{
-      if(data.session){
-        user=data.session.user;
-        enterApp().catch(e=>{$('workspace').classList.add('hide');$('auth').classList.remove('hide')})
+  function setupPhotoInputs() {
+    for (const which of ['before', 'after']) {
+      if ($(which + 'CameraBtn')) $(which + 'CameraBtn').onclick = () =>$(which + 'Camera').click();
+      if ($(which + 'GalleryBtn')) $(which + 'GalleryBtn').onclick = () =>$(which + 'Gallery').click();
+      if ($(which + 'Camera'))$(which + 'Camera').onchange = e => { addPhotoFiles(which, e.target.files); e.target.value = ''; };
+      if ($(which + 'Gallery'))$(which + 'Gallery').onchange = e => { addPhotoFiles(which, e.target.files); e.target.value = ''; };
+    }
+  }
+
+  function selectedCategories() {
+    return [...document.querySelectorAll('.category-check:checked')].map(el => el.value);
+  }
+
+  function setCategories(value) {
+    const vals = Array.isArray(value) ? value : String(value || '').split(/\s*,\s*/).filter(Boolean);
+    document.querySelectorAll('.category-check').forEach(el => { el.checked = vals.includes(el.value); });
+    if ($('category'))$('category').value = selectedCategories().join(', ');
+  }
+
+  if ($('entryForm')) {$('entryForm').onsubmit = async e => {
+      e.preventDefault();
+      let old = entries.find(x => x.id === $('editId').value);
+      let newUploads = [];
+      try {
+        let start = normalizeTime($('start').value);
+        let end = normalizeTime($('end').value);
+        msg('formStatus', 'Menyimpan data dan mengunggah foto...');
+        let beforePaths = await uploadPhotoSet('before', old?.before_path, 'before', newUploads);
+        let afterPaths = await uploadPhotoSet('after', old?.after_path, 'after', newUploads);
+
+        let row = {
+          user_id: user.id,
+          work_date: $('date').value,
+          attendance: $('attendance').value,
+          start_time: start,
+          end_time: end,
+          activity: $('activity').value.trim(),
+          location: $('location').value.trim(),
+          area: Number($('area').value),
+          category: selectedCategories().join(', '),
+          notes: $('notes').value.trim(),
+          duration_hours: 2,
+          before_path: storedValue(beforePaths),
+          after_path: storedValue(afterPaths)
+        };
+
+        let res = old
+          ? await supa.from('logbook_entries').update(row).eq('id', old.id).select().single()
+          : await supa.from('logbook_entries').insert(row).select().single();
+
+        if (res.error) throw res.error;
+        reset();
+        await loadEntries();
+        renderAll();
+        msg('formStatus', 'Kegiatan berhasil disimpan.');
+      } catch (err) {
+        msg('formStatus', err.message || 'Gagal menyimpan.', true);
       }
-    })
-  }catch(e){}
-}
+    };
+  }
+
+  function reset() {
+    if ($('entryForm'))$('entryForm').reset();
+    setCategories('');
+    if ($('editId'))$('editId').value = '';
+    pending = { before: [], after: [] };
+    if ($('date'))$('date').value = iso(new Date());
+    if ($('beforePreview'))$('beforePreview').innerHTML = '';
+    if ($('afterPreview'))$('afterPreview').innerHTML = '';
+    if ($('formHeading'))$('formHeading').textContent = 'Form Logbook Kinerja Harian';
+    if ($('saveBtn'))$('saveBtn').textContent = 'Simpan Kegiatan';
+  }
+
+  if ($('resetBtn'))$('resetBtn').onclick = reset;
+  setupPhotoInputs();
+
+  window.editEntry = function(id) {
+    let x = entries.find(e => e.id === id);
+    if (!x) return;
+    Object.entries({ editId: x.id, date: x.date, attendance: x.attendance, start: x.start, end: x.end, activity: x.activity, location: x.location, area: x.area, notes: x.notes }).forEach(([k, v]) => { if ($(k))$(k).value = v ?? ''; });
+    setCategories(x.category || '');
+    pending = {
+      before: storedPaths(x.before_path).map(path => ({ path, name: 'Foto tersimpan', url: '' })),
+      after: storedPaths(x.after_path).map(path => ({ path, name: 'Foto tersimpan', url: '' }))
+    };
+    renderPhotoPreview('before');
+    renderPhotoPreview('after');
+    loadExistingPhotoPreviews('before', x.before_path);
+    loadExistingPhotoPreviews('after', x.after_path);
+    if ($('formHeading'))$('formHeading').textContent = 'Ubah Logbook';
+    if ($('saveBtn'))$('saveBtn').textContent = 'Simpan Perubahan';
+    if ($('previewModal')) closePreviewModal();
+    tab('form');
+    window.scrollTo(0, 0);
+  };
+
+  async function del(id) {
+    if (!confirm('Hapus catatan ini?')) return;
+    const { error } = await supa.from('logbook_entries').delete().eq('id', id);
+    if (!error) { await loadEntries(); renderAll(); }
+  }
+
+  function renderList() {
+    let m = $('filterMonth') ?$('filterMonth').value : '';
+    let q = $('search') ?$('search').value.toLowerCase().trim() : '';
+    let a = entries.filter(x => (!m || x.date.startsWith(m)) && (!q || [x.activity, x.location, x.notes].join(' ').toLowerCase().includes(q)));
+    if ($('list')) {$('list').innerHTML = a.length ? a.map(x => `
+        <div class="entry">
+          <h3>${esc(x.activity)}</h3>
+          <div class="meta">${dateFmt(x.date)} · ${esc(x.attendance)} · ${esc(x.start)}–${esc(x.end)}</div>
+          <p><b>Lokasi:</b> ${esc(x.location)} (${esc(x.area)} m²)</p>
+          ${x.notes ? `<p><b>Keterangan:</b> ${esc(x.notes)}</p>` : ''}
+          <div class="actions">
+            <button onclick="editEntry('${esc(x.id)}')">Ubah</button>
+            <button class="danger" onclick="del('${esc(x.id)}')">Hapus</button>
+          </div>
+        </div>
+      `).join('') : '<div class="empty">Belum ada catatan.</div>';
+    }
+  }
+
+  function selected() {
+    let type = $('rtype') ?$('rtype').value : 'month';
+    let y = Number($('ryear') ?$('ryear').value : 2026);
+    let m = Number($('rmonth') ?$('rmonth').value : 1);
+    let q = Number($('rquarter') ?$('rquarter').value : 1);
+
+    return entries.filter(x => {
+      if (type === 'all') return true;
+      let d = new Date(x.date + 'T12:00:00');
+      if (d.getFullYear() !== y) return false;
+      if (type === 'year') return true;
+      if (type === 'month') return d.getMonth() + 1 === m;
+      if (type === 'quarter') return Math.floor(d.getMonth() / 3) + 1 === q;
+      return true;
+    }).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  function periodInfo() {
+    let t = $('rtype') ?$('rtype').value : 'month';
+    let y = Number($('ryear') ?$('ryear').value : 2026);
+    let m = Number($('rmonth') ?$('rmonth').value : 1);
+    let q = Number($('rquarter') ?$('rquarter').value : 1);
+    let months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    return {
+      type: t, year: y, month: m, quarter: q, monthName: months[m - 1],
+      label: t === 'all' ? 'Semua Data' : t === 'year' ? 'Tahun ' + y : t === 'month' ? 'Bulan ' + months[m - 1] + ' ' + y : 'Triwulan ' + ['I', 'II', 'III', 'IV'][q - 1] + ' Tahun ' + y
+    };
+  }
+
+  async function getReportPhotosChronological(a) {
+    let photos = [];
+    for (let x of a) {
+      let beforePaths = storedPaths(x.before_path);
+      let afterPaths = storedPaths(x.after_path);
+      for (let path of beforePaths) {
+        try {
+          let { data } = await supa.storage.from('logbook-photos').createSignedUrl(path, 900);
+          if (data?.signedUrl) {
+            photos.push({ id: x.id, date: x.date, url: data.signedUrl, caption: `${x.activity} (Sebelum Kegiatan - ${dateFmt(x.date)})`, location: x.location });
+          }
+        } catch (e) {}
+      }
+      for (let path of afterPaths) {
+        try {
+          let { data } = await supa.storage.from('logbook-photos').createSignedUrl(path, 900);
+          if (data?.signedUrl) {
+            photos.push({ id: x.id, date: x.date, url: data.signedUrl, caption: `${x.activity} (Sesudah Kegiatan - ${dateFmt(x.date)})`, location: x.location });
+          }
+        } catch (e) {}
+      }
+    }
+    return photos;
+  }
+
+  function reportDocHtml(a, photos = []) {
+    let p = profile, info = periodInfo();
+    let logoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png/600px-Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png";
+
+    let table1Rows = a.map((x, i) => `
+      <tr>
+        <td style="text-align:center;vertical-align:top;">${i + 1}</td>
+        <td style="vertical-align:top;white-space:nowrap;">${dateFmt(x.date)}</td>
+        <td style="vertical-align:top;text-align:justify;">
+          <b>• ${esc(x.activity)}</b>
+          <button class="no-print btn-edit-inline" onclick="editEntry('${esc(x.id)}')">✏️ Edit</button>
+        </td>
+        <td style="vertical-align:top;">• ${esc(x.location)}${x.notes ? ' (' + esc(x.notes) + ')' : ''}</td>
+      </tr>
+    `).join('');
+
+    let table2Rows = photos.map((ph, i) => `
+      <tr>
+        <td style="width:50%;text-align:center;vertical-align:middle;padding:10px;">
+          <img class="report-photo" src="${ph.url}" alt="Dokumentasi ${i + 1}">
+        </td>
+        <td style="vertical-align:top;padding:10px;text-align:justify;">
+          <b>Foto ${i + 1}</b><br>
+          <b>Tanggal:</b> ${dateFmt(ph.date)}<br>
+          <b>Lokasi:</b> ${esc(ph.location)}<br>
+          <b>Keterangan:</b> ${esc(ph.caption)}<br><br>
+          <button class="no-print btn-edit-inline" onclick="editEntry('${esc(ph.id)}')">✏️ Edit Logbook / Foto Ini</button>
+        </td>
+      </tr>
+    `).join('');
+
+    return `
+      <div class="report-document">
+        <section class="a4-paper report-cover">
+          <div>
+            <h1 style="font-size:18pt;margin:0;font-weight:bold;">LAPORAN KINERJA</h1>
+            <h2 style="font-size:15pt;margin:8px 0;font-weight:bold;">PELAKSANAAN TUGAS OPERASIONAL KANTOR</h2>
+            <h2 style="font-size:14pt;margin:0;font-weight:bold;">BULAN ${esc(info.monthName.toUpperCase())} TAHUN ${esc(String(info.year))}</h2>
+          </div>
+          <div style="margin:20mm 0;text-align:center;">
+            <img src="${logoUrl}" style="width:130px;height:130px;object-fit:contain;" alt="Logo Kementan">
+          </div>
+          <div>
+            <p style="text-align:center!important;margin:0;font-size:12pt;">Disusun oleh :</p>
+            <h3 style="font-size:13pt;margin:5px 0;font-weight:bold;">${esc(p.name.toUpperCase())}</h3>
+            <p style="text-align:center!important;margin:0;font-size:11pt;"><b>NIP. ${esc(p.nip || '199808272025211042')}</b></p>
+            <p style="text-align:center!important;margin:3px 0 25px;font-size:11pt;">${esc(p.role)}</p>
+            <h3 style="font-size:12pt;margin:0;font-weight:bold;text-align:center!important;">${esc(p.office.toUpperCase())}</h3>
+            <h3 style="font-size:12pt;margin:5px 0 0;font-weight:bold;text-align:center!important;">${esc(String(info.year))}</h3>
+          </div>
+        </section>
+
+        <section class="a4-paper report-body page-break">
+          <h2 class="report-chapter">BAB I<br>PENDAHULUAN</h2>
+          <h3>1.1 LATAR BELAKANG</h3>
+          <p>Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional dan pelayanan perkantoran secara efektif, tertib, dan berkesinambungan. Salah satu bentuk dukungan tersebut dilaksanakan melalui penempatan PPPK Paruh Waktu pada jabatan Operator Layanan Operasional.</p>
+          <p>PPPK Paruh Waktu pada jabatan tersebut memiliki peran dalam membantu pelaksanaan kegiatan administrasi, layanan internal, pengelolaan kebutuhan umum, penataan dokumen, pengelolaan sarana dan prasarana, serta dukungan terhadap berbagai kegiatan kedinasan. Pelaksanaan tugas tersebut diperlukan untuk memastikan kegiatan operasional kantor dapat berjalan dengan baik dan memberikan pelayanan yang optimal kepada pegawai maupun unit kerja.</p>
+          <h3>1.2 TUJUAN</h3>
+          <p>Tujuan penyusunan laporan pelaksanaan tugas dan fungsi jabatan Operator Layanan Operasional, adalah sebagai bentuk pertanggungjawaban kinerja pegawai di lingkungan Pusat Pelindungan Varietas Tanaman dan Perizinan Pertanian.</p>
+          <h3>1.3 WAKTU PELAKSANAAN</h3>
+          <p>Kegiatan Operator Layanan Operasional dilaksanakan di Kebun Pemeriksaan Substantif PVT I Manoko pada periode Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}.</p>
+        </section>
+
+        <section class="a4-paper report-body page-break">
+          <h2 class="report-chapter">BAB II<br>AKUNTABILITAS KINERJA</h2>
+          <h3>2.1 HASIL PELAKSANAAN</h3>
+          <p><b>Tabel 1. Rincian kegiatan operator layanan operasional Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}</b></p>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:6%">No.</th>
+                <th style="width:18%">Tanggal</th>
+                <th style="width:48%">Rincian Pekerjaan</th>
+                <th style="width:28%">Keterangan</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${table1Rows || '<tr><td colspan="4" style="text-align:center;">Belum ada data kegiatan pada periode ini.</td></tr>'}
+            </tbody>
+          </table>
+        </section>
+
+        <section class="a4-paper report-body page-break">
+          <h3>DOKUMENTASI KEGIATAN</h3>
+          <p><b>Tabel 2. Dokumentasi foto kegiatan secara berurutan Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}</b></p>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:50%">Foto Dokumentasi</th>
+                <th style="width:50%">Keterangan Kegiatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${table2Rows || '<tr><td colspan="2" style="text-align:center;">Tidak ada foto dokumentasi pada periode ini.</td></tr>'}
+            </tbody>
+          </table>
+        </section>
+
+        <section class="a4-paper report-body page-break">
+          <h2 class="report-chapter">BAB III<br>PENUTUP</h2>
+          <h3>3.1 KESIMPULAN</h3>
+          <p>Pada bulan ${esc(info.monthName)} tahun ${esc(String(info.year))} secara umum kegiatan pelaksanaan tugas PPPK Paruh Waktu jabatan Operator Layanan Operasional telah mendukung kelancaran operasional KPS PVT I Manoko.</p>
+          <h3>3.2 SARAN</h3>
+          <p>Demikian laporan ini disampaikan. Atas perhatian dan kerjasamanya, diucapkan terima kasih.</p>
+          <div class="report-sign">
+            <p>Bandung Barat, ${a.length ? dateFmt(a[a.length - 1].date) : '30 ' + info.monthName + ' ' + info.year}<br>Operator Layanan Operasional,</p>
+            <br><br><br><br>
+            <p><b>${esc(p.name)}</b><br>NIP. ${esc(p.nip || '199808272025211042')}</p>
+          </div>
+          <div style="clear:both;"></div>
+        </section>
+      </div>
+    `;
+  }
+
+  async function report() {
+    let a = selected();
+    let photos = await getReportPhotosChronological(a);
+    if ($('reportOutput'))$('reportOutput').innerHTML = reportDocHtml(a, photos);
+  }
+
+  if ($('btnPreviewReport')) {$('btnPreviewReport').onclick = async () => {
+      let a = selected();
+      let photos = await getReportPhotosChronological(a);
+      if ($('modalPaperContent'))$('modalPaperContent').innerHTML = reportDocHtml(a, photos);
+      if ($('previewModal'))$('previewModal').classList.remove('hide');
+      document.body.style.overflow = 'hidden';
+    };
+  }
+
+  window.closePreviewModal = function() {
+    if ($('previewModal'))$('previewModal').classList.add('hide');
+    document.body.style.overflow = 'auto';
+  };
+
+  function renderAll() { renderList(); report(); }
+
+  if ($('filterMonth'))$('filterMonth').oninput = renderList;
+  if ($('search'))$('search').oninput = renderList;
+  if ($('rtype')) {$('rtype').onchange = () => {
+      let t = $('rtype').value;
+      if ($('monthBox'))$('monthBox').classList.toggle('hide', t !== 'month');
+      if ($('quarterBox'))$('quarterBox').classList.toggle('hide', t !== 'quarter');
+      report();
+    };
+  }
+  if ($('refreshReport'))$('refreshReport').onclick = report;
+  if ($('print'))$('print').onclick = () => { report(); window.print(); };
+
+  // UNDUH FILE WORD (.DOCX)
+  if ($('word')) {$('word').onclick = async () => {
+      const btn = $('word');
+      const origText = btn.textContent;
+      try {
+        const docxLib = window.docx || docx;
+        if (!docxLib) {
+          alert('Pustaka pendukung Word sedang diunduh. Silakan tunggu beberapa detik lalu coba lagi.');
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = '⏳ Membuat File Word...';
+
+        const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, PageBreak, AlignmentType, WidthType } = docxLib;
+        const a = selected(), p = profile, info = periodInfo();
+        const fontName = "Arial";
+
+        const para = (text, opts = {}) => new Paragraph({
+          alignment: opts.align || AlignmentType.JUSTIFY,
+          spacing: { before: opts.before || 0, after: opts.after || 120, line: 360 },
+          children: [new TextRun({ text: text, font: fontName, size: opts.size || 22, bold: !!opts.bold })]
+        });
+
+        const centerHeading = (text, size = 24, bold = true) => new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 120, after: 120 },
+          children: [new TextRun({ text: text, font: fontName, size: size, bold: bold })]
+        });
+
+        const cell = (v, widthPercent, bold = false, align = AlignmentType.LEFT) => new TableCell({
+          width: { size: widthPercent, type: WidthType.PERCENTAGE },
+          children: [new Paragraph({ alignment: align, children: [new TextRun({ text: String(v ?? ''), font: fontName, size: 20, bold: bold })] })]
+        });
+
+        let children = [];
+
+        // COVER
+        children.push(centerHeading('LAPORAN KINERJA', 28, true));
+        children.push(centerHeading('PELAKSANAAN TUGAS OPERASIONAL KANTOR', 26, true));
+        children.push(centerHeading(`BULAN ${info.monthName.toUpperCase()} TAHUN ${info.year}`, 26, true));
+        children.push(centerHeading('\n\n\nDisusun oleh :', 22, false));
+        children.push(centerHeading(p.name, 24, true));
+        children.push(centerHeading(p.nip || '199808272025211042', 22, false));
+        children.push(centerHeading(p.role, 22, false));
+        children.push(centerHeading(`\n\n${p.office.toUpperCase()}`, 24, true));
+        children.push(centerHeading(String(info.year), 24, true));
+
+        // BAB I
+        children.push(new Paragraph({ children: [new PageBreak()] }));
+        children.push(centerHeading('BAB I PENDAHULUAN', 24, true));
+        children.push(para('1.1 LATAR BELAKANG', { bold: true }));
+        children.push(para('Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional secara efektif.'));
+
+        // BAB II
+        children.push(new Paragraph({ children: [new PageBreak()] }));
+        children.push(centerHeading('BAB II AKUNTABILITAS KINERJA', 24, true));
+        children.push(para('2.1 HASIL PELAKSANAAN', { bold: true }));
+
+        let tableRows = [
+          new TableRow({
+            children: [
+              cell('No.', 10, true, AlignmentType.CENTER),
+              cell('Tanggal', 20, true, AlignmentType.CENTER),
+              cell('Rincian Pekerjaan', 45, true, AlignmentType.CENTER),
+              cell('Keterangan', 25, true, AlignmentType.CENTER)
+            ]
+          })
+        ];
+
+        a.forEach((act, idx) => {
+          tableRows.push(new TableRow({
+            children: [
+              cell(idx + 1, 10, false, AlignmentType.CENTER),
+              cell(dateFmt(act.date), 20, false, AlignmentType.LEFT),
+              cell(act.activity, 45, false, AlignmentType.LEFT),
+              cell(`${act.location}${act.notes ? ' (' + act.notes + ')' : ''}`, 25, false, AlignmentType.LEFT)
+            ]
+          }));
+        });
+
+        children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }));
+
+        // BAB III
+        children.push(new Paragraph({ children: [new PageBreak()] }));
+        children.push(centerHeading('BAB III PENUTUP', 24, true));
+        children.push(para('3.1 KESIMPULAN', { bold: true }));
+        children.push(para(`Pada bulan ${info.monthName} tahun ${info.year} secara umum kegiatan pelaksanaan tugas telah dilaksanakan dengan baik.`));
+
+        children.push(new Paragraph({
+          alignment: AlignmentType.RIGHT,
+          spacing: { before: 360 },
+          children: [
+            new TextRun({ text: `Bandung Barat, 30 ${info.monthName} ${info.year}\nOperator Layanan Operasional,\n\n\n\n`, font: fontName, size: 22 }),
+            new TextRun({ text: p.name, font: fontName, size: 22, bold: true }),
+            new TextRun({ text: `\nNIP. ${p.nip || '199808272025211042'}`, font: fontName, size: 22 })
+          ]
+        }));
+
+        const doc = new Document({
+          sections: [{
+            properties: { page: { margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } } },
+            children: children
+          }]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        let u = URL.createObjectURL(blob);
+        let link = document.createElement('a');
+        link.href = u;
+        link.download = `Laporan_Kinerja_${info.monthName}_${info.year}_${p.name}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 2000);
+      } catch (err) {
+        alert('Gagal membuat file Word: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = origText;
+      }
+    };
+  }
+
+  if ($('profileForm')) {$('profileForm').onsubmit = async e => {
+      e.preventDefault();
+      profile = {
+        name: $('pname').value.trim(),
+        nip: $('pnip') ?$('pnip').value.trim() : '199808272025211042',
+        role: $('prole').value.trim(),
+        position: $('pposition').value.trim(),
+        office: $('poffice').value.trim(),
+        supervisor: $('psupervisor').value.trim()
+      };
+      try {
+        const { error } = await supa.from('logbook_profiles').upsert({ user_id: user.id, ...profile }, { onConflict: 'user_id' });
+        if (error) throw error;
+        msg('profileStatus', 'Profil berhasil disimpan.');
+      } catch (e) {
+        msg('profileStatus', e.message, true);
+      }
+    };
+  }
+
+  if ($('reload'))$('reload').onclick = async () => { try { await loadEntries(); renderAll(); } catch (e) { msg('settingsStatus', e.message, true); } };
+
+  const today = new Date();
+  if ($('date'))$('date').value = iso(today);
+  if ($('filterMonth'))$('filterMonth').value = iso(today).slice(0, 7);
+  if ($('ryear'))$('ryear').value = today.getFullYear();
+  if ($('rmonth'))$('rmonth').value = today.getMonth() + 1;
+
+  hookTabs();
+  initClient();
+
+  if (window.supabase?.createClient) {
+    try {
+      let c = JSON.parse(localStorage.getItem(KEY) || 'null') || { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
+      supa = window.supabase.createClient(c.url, c.key);
+      supa.auth.getSession().then(({ data }) => {
+        if (data.session) {
+          user = data.session.user;
+          enterApp().catch(() => { $('workspace').classList.add('hide');$('auth').classList.remove('hide'); });
+        }
+      });
+    } catch (e) {}
+  }
 })();
-</script>
