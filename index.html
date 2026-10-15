@@ -158,6 +158,107 @@
     .report-photo { max-width:100%; max-height:120mm; object-fit:contain; border-radius:4px; border:1px solid #ddd; }
     .report-sign { margin-top:40px; text-align:right; font-size:11pt; line-height:1.5; float:right; width:220px; }
     .btn-edit-inline { padding:3px 8px; font-size:11px; background:#286044; color:white; border-radius:5px; margin-left:6px; border:0; cursor:pointer; }
+    /* Pengaturan kertas A4 untuk laporan resmi */
+@page {
+  size: A4 portrait;
+  margin: 18mm 17mm;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #reportOutput,
+  #reportOutput * {
+    visibility: visible;
+  }
+
+  #reportOutput {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: #111;
+    font-family: Arial, "Arial MT", sans-serif;
+    font-size: 10pt;
+  }
+
+  #reportOutput .report-document {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  #reportOutput table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #reportOutput img {
+    max-width: 100%;
+  }
+
+  .no-print,
+  button {
+    display: none !important;
+  }
+}
+
+.report-preview-page {
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 16px;
+  padding: 18mm 17mm;
+  background: #fff;
+  color: #111;
+  font-family: Arial, "Arial MT", sans-serif;
+  font-size: 10pt;
+  line-height: 1.5;
+  box-shadow: 0 2px 12px #0002;
+  overflow-wrap: anywhere;
+}
+
+.report-preview-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-preview-page th,
+.report-preview-page td {
+  border: 1px solid #222;
+  padding: 5px;
+  vertical-align: top;
+}
+
+#reportPreviewModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  overflow: auto;
+  padding: 12px;
+  background: #e5e7eb;
+}
+
+#reportPreviewModal.open {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .report-preview-page {
+    width: 100%;
+    min-height: auto;
+    padding: 18px;
+    font-size: 10pt;
+  }
+}
   </style>
 </head>
 <body>
@@ -812,14 +913,57 @@ async function report(){
   if($('reportOutput'))$('reportOutput').innerHTML=reportDocHtml(a,photos);
 }
 
-if($('btnPreviewReport')){$('btnPreviewReport').onclick=async()=>{
-    let a=selected();
-    let photos=await getReportPhotosChronological(a);
-    if($('modalPaperContent'))$('modalPaperContent').innerHTML=reportDocHtml(a,photos);
-    if($('previewModal'))$('previewModal').classList.remove('hide');
-    document.body.style.overflow='hidden';
+
+if ($('btnPreviewReport')) {
+  $('btnPreviewReport').onclick = async () => {
+    try {
+      const a = selected();
+      const photos = await getReportPhotosChronological(a);
+      const html = reportDocHtml(a, photos);
+
+      if ($('modalPaperContent')) {
+        $('modalPaperContent').innerHTML = html;
+        $('modalPaperContent').style.cssText =
+          'background:#fff;color:#111;width:210mm;' +
+          'max-width:100%;min-height:297mm;' +
+          'margin:0 auto;padding:18mm 17mm;' +
+          'box-sizing:border-box;font-family:Arial,sans-serif;';
+      }
+
+      if ($('previewModal')) {
+        $('previewModal').style.display = 'block';
+        $('previewModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Pratinjau gagal dibuka. Periksa kembali data laporan.');
+    }
   };
 }
+
+
+      if ($('modalPaperContent')) {
+        $('modalPaperContent').innerHTML = html;
+        $('modalPaperContent').style.cssText =
+          'background:#fff;color:#111;width:210mm;' +
+          'max-width:100%;min-height:297mm;' +
+          'margin:0 auto;padding:18mm 17mm;' +
+          'box-sizing:border-box;font-family:Arial,sans-serif;';
+      }
+
+      if ($('previewModal')) {
+        $('previewModal').style.display = 'block';
+        $('previewModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Pratinjau gagal dibuka. Periksa kembali data laporan.');
+    }
+  };
+}
+
 
 window.closePreviewModal=function(){
   if($('previewModal'))$('previewModal').classList.add('hide');
