@@ -1,1020 +1,306 @@
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#173b2b">
-  <title>Logbook Kinerja Harian</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+<style>
+  input, textarea, select, [contenteditable="true"] {
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
+    pointer-events: auto !important;
+  }
 
-<header>
-  <div class="wrap brand-head">
-    <img class="brand-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png/600px-Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png" alt="Logo Kementan">
-    <div class="brand-copy">
-      <h1>Logbook Kinerja Harian</h1>
-      <p>KPS PVT I Manoko · Sistem Pelaporan Resmi Kinerja</p>
-    </div>
-  </div>
-</header>
+  /* Pengaturan Font Arial / Arial MT dan Rata Kiri-Kanan (Justify) untuk Laporan */
+  .preview-container, .laporan-paper, .report-document, .report-document p, .report-body p, .report-body {
+      font-family: Arial, "Arial MT", sans-serif !important;
+      text-align: justify !important;
+      text-justify: inter-word;
+      line-height: 1.6;
+  }
 
-<main>
-  <!-- AUTH SECTION -->
-  <section id="auth" class="card">
-    <h2 id="authTitle">Masuk ke Logbook</h2>
-    <p class="help">Gunakan email dan kata sandi akun Anda untuk mengakses sistem logbook.</p>
+  :root { --g:#173b2b; --g2:#286044; --bg:#f2f5f2; --line:#d9e2da; --muted:#647168; --red:#b42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); font-family: Arial, "Arial MT", sans-serif; color:#17221a; font-size:16px; }
+
+  /* Style Modal Preview (Pratinjau) */
+  .modal-preview {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.75);
+      padding: 20px;
+  }
+  .modal-preview-content {
+      background-color: #fff;
+      margin: 20px auto;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 210mm; /* Lebar A4 */
+      min-height: 297mm; /* Tinggi A4 */
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative;
+      font-family: Arial, "Arial MT", sans-serif !important;
+  }
+  .modal-close {
+      position: absolute;
+      top: 15px; right: 20px;
+      font-size: 28px; font-weight: bold;
+      color: #333; cursor: pointer;
+  }
+  .modal-close:hover { color: var(--red); }
+
+  /* Cetak A4 */
+  @media print {
+      @page { size: A4; margin: 20mm 15mm; }
+      body { background: white; font-family: Arial, "Arial MT", sans-serif !important; font-size: 11pt; color: #111; }
+      header, nav, .no-print, #reports .card:first-child, .modal-close { display: none !important; }
+      main { padding: 0; max-width: none; }
+      .modal-preview { position: static; background: transparent; padding: 0; overflow: visible; }
+      .modal-preview-content { box-shadow: none; padding: 0; margin: 0; width: 100%; max-width: 100%; }
+      .report-document { font-family: Arial, "Arial MT", sans-serif !important; text-align: justify !important; }
+      .report-page { break-after: page; page-break-after: always; min-height: 255mm; }
+      .report-page:last-child { break-after: auto; page-break-after: auto; }
+      .report-document table { font-size: 10pt; width: 100%; border-collapse: collapse; margin: 15px 0; }
+      .report-document td, .report-document th { border: 1px solid #333; padding: 8px; text-align: left; }
+      .report-document th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+      .report-photo { max-width: 100%; max-height: 80mm; object-fit: contain; border-radius: 4px; display: block; margin: auto; }
+      .report-sign { margin-top: 40px; text-align: right; }
+      .report-chapter { text-align: center; margin: 20px 0 25px; font-size: 14pt; }
+  }
+
+  /* Style umum tabel & thumbnail foto */
+  .photo-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 10px; }
+  .photo-thumb { border: 1px solid #d1d5db; border-radius: 8px; padding: 5px; background: #fff; }
+  .photo-thumb img { width: 100%; height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; }
+  .photo-thumb button { width: 100%; padding: 4px; margin-top: 4px; font-size: 11px; background: #fee2e2; color: var(--red); border: none; border-radius: 4px; cursor: pointer; }
+</style>
+<section id="reports" class="tab">
+  <div class="card no-print">
+    <h2>Rekap Laporan</h2>
     <div class="grid">
-      <div class="field full"><label for="email">Email</label><input id="email" type="email" placeholder="nama@email.com" required></div>
-      <div class="field full"><label for="password">Kata Sandi</label><input id="password" type="password" minlength="6" placeholder="Minimal 6 karakter" required></div>
+      <div class="field">
+        <label for="rtype">Jenis laporan</label>
+        <select id="rtype">
+          <option value="month">Bulanan</option>
+          <option value="quarter">Triwulan</option>
+          <option value="year">Tahunan</option>
+          <option value="all">Semua data</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="ryear">Tahun</label>
+        <input id="ryear" type="number" min="2000" max="2100">
+      </div>
+      <div class="field" id="monthBox">
+        <label for="rmonth">Bulan</label>
+        <select id="rmonth">
+          <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
+          <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
+          <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
+          <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+        </select>
+      </div>
+      <div class="field hide" id="quarterBox">
+        <label for="rquarter">Triwulan</label>
+        <select id="rquarter">
+          <option value="1">I (Jan–Mar)</option><option value="2">II (Apr–Jun)</option>
+          <option value="3">III (Jul–Sep)</option><option value="4">IV (Okt–Des)</option>
+        </select>
+      </div>
     </div>
+    
+    <!-- Tombol Aksi Lengkap dengan Fitur Preview -->
     <div class="actions">
-      <button id="login" class="primary">Masuk</button>
-      <button id="signup">Daftar Akun Baru</button>
-      <button id="forgot">Lupa Kata Sandi</button>
-    </div>
-    <div id="authStatus" class="status"></div>
-  </section>
-
-  <!-- WORKSPACE SECTION -->
-  <section id="workspace" class="hide">
-    <div class="card no-print">
-      <div class="actions" style="margin-top:0; justify-content:space-between; align-items:center;">
-        <span id="userLabel" class="help"></span>
-        <button id="logout" class="danger">Keluar</button>
-      </div>
-    </div>
-
-    <nav class="no-print">
-      <button class="active" data-tab="form">Isi Logbook</button>
-      <button data-tab="data">Data Harian</button>
-      <button data-tab="reports">Laporan</button>
-      <button data-tab="profile">Profil</button>
-      <button data-tab="settings">Pengaturan</button>
-    </nav>
-
-    <!-- TAB FORM -->
-    <section id="form" class="tab active">
-      <div class="card">
-        <h2 id="formHeading">Form Logbook Kinerja Harian</h2>
-        <form id="entryForm">
-          <input type="hidden" id="editId">
-          <div class="grid">
-            <div class="field"><label for="date">Tanggal <span class="req">*</span></label><input id="date" type="date" required></div>
-            <div class="field"><label for="attendance">Kehadiran <span class="req">*</span></label>
-              <select id="attendance" required>
-                <option value="">Pilih kehadiran</option>
-                <option>WFO</option>
-                <option>SAKIT</option>
-                <option>DINAS LUAR</option>
-              </select>
-            </div>
-            <div class="field"><label for="start">Waktu Mulai <span class="req">*</span></label><input id="start" type="time" required></div>
-            <div class="field"><label for="end">Waktu Selesai <span class="req">*</span></label><input id="end" type="time" required></div>
-            <div class="field full"><label for="activity">Uraian Pekerjaan <span class="req">*</span></label><textarea id="activity" required placeholder="Jelaskan pekerjaan yang dilaksanakan"></textarea></div>
-            <div class="field full"><label for="location">Lokasi Pekerjaan <span class="req">*</span></label><input id="location" required placeholder="Contoh: Blok kebun, rumah kaca, kantor"></div>
-            <div class="field"><label for="area">Luas Lokasi Pekerjaan (m²) <span class="req">*</span></label><input id="area" type="number" min="0" step="0.01" required placeholder="Contoh: 700"></div>
-
-            <div class="field full">
-              <label>Kategori Kegiatan <span class="req">*</span></label>
-              <input id="category" type="hidden" value="">
-              <div id="categoryOptions" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin-top:6px;">
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Pengolahan lahan">Pengolahan lahan</label>
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Persiapan tanam">Persiapan tanam</label>
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Pemeliharaan tanaman">Pemeliharaan tanaman</label>
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Panen">Panen</label>
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Pengamatan tanaman">Pengamatan tanaman</label>
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Perbaikan sarana prasarana">Perbaikan sarana prasarana</label>
-                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px"><input type="checkbox" class="category-check" value="Kegiatan lainnya">Kegiatan lainnya</label>
-              </div>
-            </div>
-
-            <div class="field full"><label for="notes">Keterangan (opsional)</label><textarea id="notes" placeholder="Keterangan tambahan"></textarea></div>
-
-            <div class="field full photo-group">
-              <label>Foto Kondisi SEBELUM Kegiatan <span class="req">*</span></label>
-              <div class="actions">
-                <button type="button" id="beforeCameraBtn">📷 Ambil Foto Langsung</button>
-                <button type="button" id="beforeGalleryBtn">🖼️ Pilih dari Galeri</button>
-              </div>
-              <input id="beforeCamera" type="file" accept="image/*" capture="environment" hidden>
-              <input id="beforeGallery" type="file" accept="image/*" multiple hidden>
-              <div id="beforePreview" class="photo-preview"></div>
-            </div>
-
-            <div class="field full photo-group">
-              <label>Foto Kondisi SETELAH Kegiatan <span class="req">*</span></label>
-              <div class="actions">
-                <button type="button" id="afterCameraBtn">📷 Ambil Foto Langsung</button>
-                <button type="button" id="afterGalleryBtn">🖼️ Pilih dari Galeri</button>
-              </div>
-              <input id="afterCamera" type="file" accept="image/*" capture="environment" hidden>
-              <input id="afterGallery" type="file" accept="image/*" multiple hidden>
-              <div id="afterPreview" class="photo-preview"></div>
-            </div>
-          </div>
-          <div class="actions">
-            <button class="primary" type="submit" id="saveBtn">Simpan Kegiatan</button>
-            <button type="button" id="resetBtn">Kosongkan Form</button>
-          </div>
-        </form>
-        <div id="formStatus" class="status"></div>
-      </div>
-    </section>
-
-    <!-- TAB DATA HARIAN -->
-    <section id="data" class="tab">
-      <div class="card">
-        <h2>Data Harian</h2>
-        <div class="grid no-print">
-          <div class="field"><label for="filterMonth">Filter Bulan</label><input id="filterMonth" type="month"></div>
-          <div class="field"><label for="search">Cari Uraian/Lokasi</label><input id="search" placeholder="Kata kunci"></div>
-        </div>
-        <div id="list"></div>
-      </div>
-    </section>
-
-    <!-- TAB LAPORAN -->
-    <section id="reports" class="tab">
-      <div class="card no-print">
-        <h2>Rekap & Pembuatan Laporan Resmi</h2>
-        <div class="grid">
-          <div class="field"><label for="rtype">Jenis Laporan</label>
-            <select id="rtype">
-              <option value="month">Bulanan</option>
-              <option value="quarter">Triwulan</option>
-              <option value="year">Tahunan</option>
-              <option value="all">Semua data</option>
-            </select>
-          </div>
-          <div class="field"><label for="ryear">Tahun</label><input id="ryear" type="number" min="2000" max="2100"></div>
-          <div class="field" id="monthBox"><label for="rmonth">Bulan</label>
-            <select id="rmonth">
-              <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
-              <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
-              <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
-              <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
-            </select>
-          </div>
-          <div class="field hide" id="quarterBox"><label for="rquarter">Triwulan</label>
-            <select id="rquarter">
-              <option value="1">I (Jan–Mar)</option><option value="2">II (Apr–Jun)</option>
-              <option value="3">III (Jul–Sep)</option><option value="4">IV (Okt–Des)</option>
-            </select>
-          </div>
-        </div>
-        <div class="actions">
-          <button class="primary" id="refreshReport">Tampilkan Ringkasan</button>
-          <button id="btnPreviewReport" style="background:#173b2b; color:white;">👁️ Pratinjau / Preview Laporan A4</button>
-          <button id="print">Unduh / Cetak PDF</button>
-          <button id="word">Unduh Word (.docx)</button>
-          <button id="csv">Unduh CSV</button>
-        </div>
-      </div>
-      <div class="card" id="reportOutput"></div>
-    </section>
-
-    <!-- TAB PROFIL -->
-    <section id="profile" class="tab">
-      <div class="card">
-        <h2>Profil Pegawai</h2>
-        <form id="profileForm">
-          <div class="grid">
-            <div class="field"><label>Nama Lengkap</label><input id="pname" value="Riki Subagja"></div>
-            <div class="field"><label>NIP / No. Identitas</label><input id="pnip" value="199808272025211042"></div>
-            <div class="field"><label>Status Pegawai</label><input id="prole" value="PPPK Paruh Waktu"></div>
-            <div class="field full"><label>Jabatan</label><input id="pposition" value="Operator Layanan Operasional"></div>
-            <div class="field full"><label>Unit Kerja / Kantor</label><input id="poffice" value="PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN"></div>
-            <div class="field full"><label>Atasan / Pembimbing</label><input id="psupervisor"></div>
-          </div>
-          <div class="actions"><button class="primary" type="submit">Simpan Profil</button></div>
-        </form>
-        <div id="profileStatus" class="status"></div>
-      </div>
-    </section>
-
-    <!-- TAB PENGATURAN -->
-    <section id="settings" class="tab">
-      <div class="card">
-        <h2>Pengaturan</h2>
-        <p class="help">Data tersimpan di server Supabase secara terintegrasi.</p>
-        <div class="actions">
-          <button id="reload">Muat ulang data dari server</button>
-          <button id="exportJson">Unduh cadangan JSON</button>
-        </div>
-        <div id="settingsStatus" class="status"></div>
-      </div>
-    </section>
-  </section>
-</main>
-
-<!-- MODAL PREVIEW DOKUMEN A4 -->
-<div id="previewModal" class="modal-overlay hide">
-  <div class="modal-header">
-    <h3 style="margin:0; font-size:15px;">📄 Pratinjau Laporan Resmi (Format A4)</h3>
-    <div style="display:flex; gap:8px;">
-      <button onclick="window.print()" class="primary" style="padding:6px 12px; font-size:12px;">🖨️ Cetak / Save PDF</button>
-      <button onclick="closePreviewModal()" style="padding:6px 12px; font-size:12px; background:#b42318; color:white;">Tutup</button>
+      <button class="primary" id="previewReportBtn">🔍 Pratinjau (Preview) Laporan</button>
+      <button id="print">Unduh / Cetak PDF</button>
+      <button id="word">Unduh Word (.docx)</button>
+      <button id="csv">Unduh CSV</button>
     </div>
   </div>
-  <div id="modalPaperContent" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
-</div>
 
-<!-- LIBRARIES -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-<script src="script.js"></script>
-</body>
-</html>
-input, textarea, select, [contenteditable="true"] {
-  -webkit-user-select: auto !important;
-  user-select: auto !important;
-  pointer-events: auto !important;
-}
+  <!-- Container Output Laporan di Halaman -->
+  <div class="card" id="reportOutput"></div>
 
-:root {
-  --g: #173b2b; --g2: #286044; --bg: #f2f5f2; --line: #d9e2da; --muted: #647168; --red: #b42318;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: #17221a; font-size: 15px; line-height: 1.4; }
-header { background: var(--g); color: white; padding: 18px 16px; }
-.brand-head { display: flex; align-items: center; gap: 12px; max-width: 1000px; margin: auto; }
-.brand-logo { width: 56px; height: 56px; object-fit: contain; border-radius: 50%; background: white; padding: 3px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; }
-.brand-copy h1 { font-size: 20px; margin: 0 0 3px; line-height: 1.2; }
-.brand-copy p { margin: 0; font-size: 12px; color: #d9e9de; }
-main { max-width: 1000px; margin: auto; padding: 10px 12px 30px; }
-nav { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; max-width: 1000px; margin: auto; }
-button, .btn { font: inherit; cursor: pointer; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 600; font-size: 13px; background: #e5ede6; color: var(--g); white-space: nowrap; transition: 0.2s; }
-nav button.active, .primary { background: var(--g2); color: white; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.card { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 10px 0; }
-h2 { font-size: 18px; margin: 0 0 12px; }
-.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.field { display: flex; flex-direction: column; gap: 5px; }
-.full { grid-column: 1 / -1; }
-label { font-size: 13px; font-weight: 600; }
-label .req { color: var(--red); }
-input, select, textarea { font: inherit; font-size: 14px; width: 100%; padding: 10px; border: 1px solid #cbd6cc; border-radius: 8px; background: white; color: #17221a; }
-textarea { min-height: 80px; resize: vertical; }
-.help { font-size: 12px; color: var(--muted); }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-.danger { background: #fff0ee; color: var(--red); }
-.entry { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 10px 0; }
-.entry h3 { font-size: 15px; margin: 0 0 4px; }
-.meta { font-size: 12px; color: var(--muted); }
-table { border-collapse: collapse; width: 100%; font-size: 11pt; font-family: Arial, sans-serif; }
-td, th { border: 1px solid #222; padding: 7px; text-align: left; vertical-align: top; }
-th { background: #eaf2eb; font-weight: bold; text-align: center; }
-.hide { display: none !important; }
-.status { font-size: 13px; margin: 8px 0; color: var(--g2); }
-.status.err { color: var(--red); }
-
-/* Thumbnails Foto Logbook */
-.photo-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 8px; }
-.photo-thumb { border: 1px solid #d1d5db; border-radius: 8px; padding: 4px; background: #f9fafb; }
-.photo-thumb img { width: 100%; height: 75px; object-fit: cover; border-radius: 4px; display: block; }
-.photo-thumb button { width: 100%; padding: 4px; margin-top: 4px; font-size: 11px; }
-
-/* Layout Dokumen Laporan Resmi & Kertas A4 */
-.report-document { font-family: Arial, sans-serif !important; text-align: justify !important; color: #111; line-height: 1.5; }
-.report-document p { text-align: justify !important; line-height: 1.5; margin-bottom: 10px; font-size: 11pt; }
-.a4-paper { background: white; width: 210mm; min-height: 297mm; padding: 25.4mm 20mm 20mm 25.4mm; margin: 15px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.15); box-sizing: border-box; position: relative; }
-.report-cover { display: flex; flex-direction: column; justify-content: space-between; text-align: center; min-height: 240mm; }
-.report-chapter { text-align: center; font-weight: bold; font-size: 14pt; margin: 15px 0 20px; line-height: 1.3; }
-.report-body h3 { font-size: 12pt; font-weight: bold; margin-top: 16px; margin-bottom: 6px; text-align: left; }
-.report-photo { max-width: 100%; max-height: 110mm; object-fit: contain; border-radius: 4px; border: 1px solid #ccc; }
-.report-sign { margin-top: 35px; text-align: right; font-size: 11pt; float: right; width: 220px; }
-.btn-edit-inline { padding: 3px 7px; font-size: 11px; background: #286044; color: white; border-radius: 4px; border: 0; cursor: pointer; }
-
-/* Modal Overlay Preview A4 */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 9999; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 15px 10px; }
-.modal-header { background: var(--g); color: white; width: 100%; max-width: 220mm; padding: 10px 16px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10000; }
-
-@media print {
-  .no-print { display: none !important; }
-  .page-break { page-break-before: always; break-before: page; }
-  body { background: white; }
-  .a4-paper { width: 100%; box-shadow: none; padding: 0; margin: 0; }
-  @page { size: A4; margin: 25.4mm 20mm 20mm 25.4mm; }
-}
-@media (max-width: 600px) {
-  .grid { grid-template-columns: 1fr; }
-  .a4-paper { width: 100%; padding: 15px; }
-}
-(() => {
-  'use strict';
-
-  const $ = id => document.getElementById(id);
-  const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const KEY = 'logbook_online_config_v1';
-  const DEFAULT_SUPABASE_URL = 'https://jzeygzghxuxbtyrqcpyy.supabase.co';
-  const DEFAULT_SUPABASE_KEY = 'sb_publishable_H6zvX_d1z6nRQEhlZgXvdw_ztq_eS6p';
-
-  let supa = null;
-  let user = null;
-  let entries = [];
-  let profile = {
-    name: 'Riki Subagja',
-    nip: '199808272025211042',
-    role: 'PPPK Paruh Waktu',
-    position: 'Operator Layanan Operasional',
-    office: 'PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN',
-    supervisor: ''
-  };
-  let pending = { before: [], after: [] };
-
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const dateFmt = s => s ? `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : '-';
-
-  function msg(id, t, err = false) {
-    if ($(id)) {$(id).textContent = t;
-      $(id).className = 'status' + (err ? ' err' : '');
-    }
-  }
-
-  function initClient() {
-    let c;
-    try { c = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
-    if (!c || !c.url || !c.key) c = { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
-    try {
-      supa = window.supabase.createClient(c.url, c.key);
-    } catch (e) {
-      msg('authStatus', 'Koneksi gagal: ' + (e.message || e), true);
-    }
-  }
-
-  async function authAction(mode) {
-    try {
-      let email = $('email').value.trim();
-      let password = $('password').value;
-      if (!email) throw Error('Masukkan email.');
-      if (mode !== 'forgot' && !password) throw Error('Masukkan kata sandi.');
-      msg('authStatus', 'Memproses...');
-      let r;
-      if (mode === 'login') r = await supa.auth.signInWithPassword({ email, password });
-      else if (mode === 'signup') r = await supa.auth.signUp({ email, password });
-      else r = await supa.auth.resetPasswordForEmail(email);
-
-      if (r.error) throw r.error;
-      user = r.data.user;
-      await enterApp();
-    } catch (e) {
-      msg('authStatus', e.message || 'Autentikasi gagal.', true);
-    }
-  }
-
-  if ($('login'))$('login').onclick = () => authAction('login');
-  if ($('signup'))$('signup').onclick = () => authAction('signup');
-  if ($('forgot'))$('forgot').onclick = () => authAction('forgot');
-
-  async function enterApp() {
-    if (!supa || !user) return;
-    $('auth').classList.add('hide');
-    $('workspace').classList.remove('hide');$('userLabel').textContent = 'Masuk sebagai ' + (user.email || 'pengguna');
-    await loadProfile();
-    await loadEntries();
-    renderAll();
-  }
-
-  if ($('logout')) {$('logout').onclick = async () => {
-      if (supa) await supa.auth.signOut();
-      user = null;
-      entries = [];
-      $('workspace').classList.add('hide');$('auth').classList.remove('hide');
-    };
-  }
-
-  function tab(id) {
-    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.id === id));
-    document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x.dataset.tab === id));
-    if (id === 'reports') report();
-  }
-
-  function hookTabs() {
-    document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
-  }
-
-  async function loadProfile() {
-    const { data } = await supa.from('logbook_profiles').select('*').eq('user_id', user.id).maybeSingle();
-    if (data) {
-      profile = {
-        name: data.name || 'Riki Subagja',
-        nip: data.nip || '199808272025211042',
-        role: data.role || 'PPPK Paruh Waktu',
-        position: data.position || 'Operator Layanan Operasional',
-        office: data.office || 'PUSAT PELINDUNGAN VARIETAS TANAMAN DAN PERIZINAN PERTANIAN',
-        supervisor: data.supervisor || ''
-      };
-    }
-    setProfile();
-  }
-
-  function setProfile() {
-    if ($('pname'))$('pname').value = profile.name;
-    if ($('pnip'))$('pnip').value = profile.nip || '199808272025211042';
-    if ($('prole'))$('prole').value = profile.role;
-    if ($('pposition'))$('pposition').value = profile.position;
-    if ($('poffice'))$('poffice').value = profile.office;
-    if ($('psupervisor'))$('psupervisor').value = profile.supervisor;
-  }
-
-  async function loadEntries() {
-    msg('settingsStatus', 'Mengambil data dari server...');
-    const { data, error } = await supa.from('logbook_entries').select('*').order('work_date', { ascending: true });
-    if (error) throw error;
-    entries = (data || []).map(x => ({
-      ...x,
-      id: x.id,
-      date: x.work_date,
-      attendance: x.attendance,
-      start: x.start_time,
-      end: x.end_time,
-      activity: x.activity,
-      location: x.location,
-      area: x.area,
-      category: x.category,
-      result: x.result || '',
-      notes: x.notes || '',
-      before_path: x.before_path,
-      after_path: x.after_path
-    }));
-    msg('settingsStatus', `Data dimuat: ${entries.length} catatan.`);
-  }
-
-  function normalizeTime(raw) {
-    let t = String(raw ?? '').trim().replace(/[.٫]/g, ':');
-    if (!t) return null;
-    let m = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-    if (!m) return null;
-    return String(Number(m[1])).padStart(2, '0') + ':' + String(Number(m[2])).padStart(2, '0');
-  }
-
-  async function uploadPhoto(file, oldPath, prefix) {
-    if (!file) return oldPath || null;
-    let ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    let path = `${user.id}/${Date.now()}_${prefix}.${ext}`;
-    const { error } = await supa.storage.from('logbook-photos').upload(path, file, { upsert: false, contentType: file.type });
-    if (error) throw error;
-    return path;
-  }
-
-  function storedPaths(value) {
-    if (!value) return [];
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return parsed.filter(Boolean);
-    } catch (e) {}
-    return [value].filter(Boolean);
-  }
-
-  function storedValue(paths) {
-    return JSON.stringify(paths || []);
-  }
-
-  function renderPhotoPreview(which) {
-    const target = $(which + 'Preview');
-    if (!target) return;
-    const files = pending[which] || [];
-    target.innerHTML = '';
-    files.forEach((item, index) => {
-      const url = item.url || (item.file ? URL.createObjectURL(item.file) : '');
-      const card = document.createElement('div');
-      card.className = 'photo-thumb';
-      card.innerHTML = `<img src="${url}" alt="Foto ${which}"><button type="button" onclick="removePendingPhoto('${which}', ${index})">Hapus</button>`;
-      target.appendChild(card);
-    });
-  }
-
-  window.removePendingPhoto = function(which, index) {
-    pending[which].splice(index, 1);
-    renderPhotoPreview(which);
-  };
-
-  function addPhotoFiles(which, fileList) {
-    for (const file of [...fileList]) {
-      if (pending[which].length >= 10) break;
-      pending[which].push({ file, name: file.name });
-    }
-    renderPhotoPreview(which);
-  }
-
-  async function loadExistingPhotoPreviews(which, value) {
-    const paths = storedPaths(value);
-    for (let p of paths) {
-      try {
-        const { data } = await supa.storage.from('logbook-photos').createSignedUrl(p, 900);
-        if (data?.signedUrl) {
-          let item = pending[which].find(x => x.path === p);
-          if (item) item.url = data.signedUrl;
-        }
-      } catch (e) {}
-    }
-    renderPhotoPreview(which);
-  }
-
-  async function uploadPhotoSet(which, oldValue, prefix, newUploads) {
-    const oldPaths = storedPaths(oldValue);
-    const chosen = pending[which] || [];
-    if (!chosen.length) return oldPaths;
-    const paths = chosen.filter(x => x.path).map(x => x.path);
-    for (let i = 0; i < chosen.length; i++) {
-      const item = chosen[i];
-      if (item.path) continue;
-      const path = await uploadPhoto(item.file, null, `${prefix}_${Date.now()}_${i}`);
-      paths.push(path);
-      newUploads.push(path);
-    }
-    return paths;
-  }
-
-  function setupPhotoInputs() {
-    for (const which of ['before', 'after']) {
-      if ($(which + 'CameraBtn')) $(which + 'CameraBtn').onclick = () =>$(which + 'Camera').click();
-      if ($(which + 'GalleryBtn')) $(which + 'GalleryBtn').onclick = () =>$(which + 'Gallery').click();
-      if ($(which + 'Camera'))$(which + 'Camera').onchange = e => { addPhotoFiles(which, e.target.files); e.target.value = ''; };
-      if ($(which + 'Gallery'))$(which + 'Gallery').onchange = e => { addPhotoFiles(which, e.target.files); e.target.value = ''; };
-    }
-  }
-
-  function selectedCategories() {
-    return [...document.querySelectorAll('.category-check:checked')].map(el => el.value);
-  }
-
-  function setCategories(value) {
-    const vals = Array.isArray(value) ? value : String(value || '').split(/\s*,\s*/).filter(Boolean);
-    document.querySelectorAll('.category-check').forEach(el => { el.checked = vals.includes(el.value); });
-    if ($('category'))$('category').value = selectedCategories().join(', ');
-  }
-
-  if ($('entryForm')) {$('entryForm').onsubmit = async e => {
-      e.preventDefault();
-      let old = entries.find(x => x.id === $('editId').value);
-      let newUploads = [];
-      try {
-        let start = normalizeTime($('start').value);
-        let end = normalizeTime($('end').value);
-        msg('formStatus', 'Menyimpan data dan mengunggah foto...');
-        let beforePaths = await uploadPhotoSet('before', old?.before_path, 'before', newUploads);
-        let afterPaths = await uploadPhotoSet('after', old?.after_path, 'after', newUploads);
-
-        let row = {
-          user_id: user.id,
-          work_date: $('date').value,
-          attendance: $('attendance').value,
-          start_time: start,
-          end_time: end,
-          activity: $('activity').value.trim(),
-          location: $('location').value.trim(),
-          area: Number($('area').value),
-          category: selectedCategories().join(', '),
-          notes: $('notes').value.trim(),
-          duration_hours: 2,
-          before_path: storedValue(beforePaths),
-          after_path: storedValue(afterPaths)
-        };
-
-        let res = old
-          ? await supa.from('logbook_entries').update(row).eq('id', old.id).select().single()
-          : await supa.from('logbook_entries').insert(row).select().single();
-
-        if (res.error) throw res.error;
-        reset();
-        await loadEntries();
-        renderAll();
-        msg('formStatus', 'Kegiatan berhasil disimpan.');
-      } catch (err) {
-        msg('formStatus', err.message || 'Gagal menyimpan.', true);
-      }
-    };
-  }
-
-  function reset() {
-    if ($('entryForm'))$('entryForm').reset();
-    setCategories('');
-    if ($('editId'))$('editId').value = '';
-    pending = { before: [], after: [] };
-    if ($('date'))$('date').value = iso(new Date());
-    if ($('beforePreview'))$('beforePreview').innerHTML = '';
-    if ($('afterPreview'))$('afterPreview').innerHTML = '';
-    if ($('formHeading'))$('formHeading').textContent = 'Form Logbook Kinerja Harian';
-    if ($('saveBtn'))$('saveBtn').textContent = 'Simpan Kegiatan';
-  }
-
-  if ($('resetBtn'))$('resetBtn').onclick = reset;
-  setupPhotoInputs();
-
-  window.editEntry = function(id) {
-    let x = entries.find(e => e.id === id);
-    if (!x) return;
-    Object.entries({ editId: x.id, date: x.date, attendance: x.attendance, start: x.start, end: x.end, activity: x.activity, location: x.location, area: x.area, notes: x.notes }).forEach(([k, v]) => { if ($(k))$(k).value = v ?? ''; });
-    setCategories(x.category || '');
-    pending = {
-      before: storedPaths(x.before_path).map(path => ({ path, name: 'Foto tersimpan', url: '' })),
-      after: storedPaths(x.after_path).map(path => ({ path, name: 'Foto tersimpan', url: '' }))
-    };
-    renderPhotoPreview('before');
-    renderPhotoPreview('after');
-    loadExistingPhotoPreviews('before', x.before_path);
-    loadExistingPhotoPreviews('after', x.after_path);
-    if ($('formHeading'))$('formHeading').textContent = 'Ubah Logbook';
-    if ($('saveBtn'))$('saveBtn').textContent = 'Simpan Perubahan';
-    if ($('previewModal')) closePreviewModal();
-    tab('form');
-    window.scrollTo(0, 0);
-  };
-
-  async function del(id) {
-    if (!confirm('Hapus catatan ini?')) return;
-    const { error } = await supa.from('logbook_entries').delete().eq('id', id);
-    if (!error) { await loadEntries(); renderAll(); }
-  }
-
-  function renderList() {
-    let m = $('filterMonth') ?$('filterMonth').value : '';
-    let q = $('search') ?$('search').value.toLowerCase().trim() : '';
-    let a = entries.filter(x => (!m || x.date.startsWith(m)) && (!q || [x.activity, x.location, x.notes].join(' ').toLowerCase().includes(q)));
-    if ($('list')) {$('list').innerHTML = a.length ? a.map(x => `
-        <div class="entry">
-          <h3>${esc(x.activity)}</h3>
-          <div class="meta">${dateFmt(x.date)} · ${esc(x.attendance)} · ${esc(x.start)}–${esc(x.end)}</div>
-          <p><b>Lokasi:</b> ${esc(x.location)} (${esc(x.area)} m²)</p>
-          ${x.notes ? `<p><b>Keterangan:</b> ${esc(x.notes)}</p>` : ''}
-          <div class="actions">
-            <button onclick="editEntry('${esc(x.id)}')">Ubah</button>
-            <button class="danger" onclick="del('${esc(x.id)}')">Hapus</button>
-          </div>
-        </div>
-      `).join('') : '<div class="empty">Belum ada catatan.</div>';
-    }
-  }
-
-  function selected() {
-    let type = $('rtype') ?$('rtype').value : 'month';
-    let y = Number($('ryear') ?$('ryear').value : 2026);
-    let m = Number($('rmonth') ?$('rmonth').value : 1);
-    let q = Number($('rquarter') ?$('rquarter').value : 1);
-
+  <!-- Modal Fullscreen Pratinjau (Preview Modal) -->
+  <div id="previewModal" class="modal-preview">
+    <div class="modal-preview-content">
+      <span class="modal-close" id="closeModalBtn">&times;</span>
+      <div id="modalReportBody"></div>
+    </div>
+  </div>
+</section>
+// Mengurutkan data logbook berdasarkan tanggal awal (kronologis)
+function selected() {
+    let type = $('rtype').value, y = Number($('ryear').value), m = Number($('rmonth').value), q = Number($('rquarter').value);
     return entries.filter(x => {
-      if (type === 'all') return true;
-      let d = new Date(x.date + 'T12:00:00');
-      if (d.getFullYear() !== y) return false;
-      if (type === 'year') return true;
-      if (type === 'month') return d.getMonth() + 1 === m;
-      if (type === 'quarter') return Math.floor(d.getMonth() / 3) + 1 === q;
-      return true;
-    }).sort((a, b) => a.date.localeCompare(b.date));
-  }
+        if (type === 'all') return true;
+        let d = new Date(x.date + 'T12:00:00');
+        if (d.getFullYear() !== y) return false;
+        if (type === 'year') return true;
+        if (type === 'month') return d.getMonth() + 1 === m;
+        if (type === 'quarter') return Math.floor(d.getMonth() / 3) + 1 === q;
+        return true;
+    }).sort((a, b) => a.date.localeCompare(b.date)); // Diurutkan dari tanggal terawal ke terbaru
+}
 
-  function periodInfo() {
-    let t = $('rtype') ?$('rtype').value : 'month';
-    let y = Number($('ryear') ?$('ryear').value : 2026);
-    let m = Number($('rmonth') ?$('rmonth').value : 1);
-    let q = Number($('rquarter') ?$('rquarter').value : 1);
-    let months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    return {
-      type: t, year: y, month: m, quarter: q, monthName: months[m - 1],
-      label: t === 'all' ? 'Semua Data' : t === 'year' ? 'Tahun ' + y : t === 'month' ? 'Bulan ' + months[m - 1] + ' ' + y : 'Triwulan ' + ['I', 'II', 'III', 'IV'][q - 1] + ' Tahun ' + y
-    };
-  }
-
-  async function getReportPhotosChronological(a) {
-    let photos = [];
-    for (let x of a) {
-      let beforePaths = storedPaths(x.before_path);
-      let afterPaths = storedPaths(x.after_path);
-      for (let path of beforePaths) {
-        try {
-          let { data } = await supa.storage.from('logbook-photos').createSignedUrl(path, 900);
-          if (data?.signedUrl) {
-            photos.push({ id: x.id, date: x.date, url: data.signedUrl, caption: `${x.activity} (Sebelum Kegiatan - ${dateFmt(x.date)})`, location: x.location });
-          }
-        } catch (e) {}
-      }
-      for (let path of afterPaths) {
-        try {
-          let { data } = await supa.storage.from('logbook-photos').createSignedUrl(path, 900);
-          if (data?.signedUrl) {
-            photos.push({ id: x.id, date: x.date, url: data.signedUrl, caption: `${x.activity} (Sesudah Kegiatan - ${dateFmt(x.date)})`, location: x.location });
-          }
-        } catch (e) {}
-      }
+// Pengambilan foto yang benar-benar berurutan berdasarkan tanggal logbook
+async function getReportPhotos(a, limit = 50) {
+    let out = [];
+    // Urutkan catatan logbook dari tanggal paling awal
+    let sortedEntries = [...a].sort((x, y) => x.date.localeCompare(y.date));
+    
+    for (const x of sortedEntries) {
+        for (const [key, label] of [['before_path', 'Sebelum Kegiatan'], ['after_path', 'Sesudah Kegiatan']]) {
+            for (const [i, path] of storedPaths(x[key]).entries()) {
+                if (out.length >= limit) return out;
+                try {
+                    let { data, error } = await supa.storage.from('logbook-photos').createSignedUrl(path, 900);
+                    if (!error && data?.signedUrl) {
+                        out.push({
+                            url: data.signedUrl,
+                            caption: `${dateFmt(x.date)} - ${x.activity} (${label} ${i + 1})`,
+                            date: x.date,
+                            activity: x.activity
+                        });
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
     }
-    return photos;
-  }
+    return out;
+}
 
-  function reportDocHtml(a, photos = []) {
-    let p = profile, info = periodInfo();
-    let logoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png/600px-Logo_Kementerian_Pertanian_Republik_Indonesia_%28Kementan_RI%29.png";
-
-    let table1Rows = a.map((x, i) => `
-      <tr>
-        <td style="text-align:center;vertical-align:top;">${i + 1}</td>
-        <td style="vertical-align:top;white-space:nowrap;">${dateFmt(x.date)}</td>
-        <td style="vertical-align:top;text-align:justify;">
-          <b>• ${esc(x.activity)}</b>
-          <button class="no-print btn-edit-inline" onclick="editEntry('${esc(x.id)}')">✏️ Edit</button>
-        </td>
-        <td style="vertical-align:top;">• ${esc(x.location)}${x.notes ? ' (' + esc(x.notes) + ')' : ''}</td>
-      </tr>
+// Template Laporan Resmi (Menggunakan Font Arial, Justify, A4, & Cover Operasional Kantor)
+function reportDocHtml(a, photos = []) {
+    let p = profile, info = periodInfo(), sum = summaryRows(a), title = info.type === 'year' ? 'TAHUNAN' : info.type === 'quarter' ? 'TRIWULAN' : 'BULANAN';
+    let range = info.type === 'month' ? info.months[info.month - 1] + ' ' + info.year : info.type === 'quarter' ? info.label : info.type === 'year' ? 'Tahun ' + info.year : info.label;
+    let td = (v) => `<td style="text-align:justify; vertical-align:top;">${esc(v).replace(/\n/g, '<br>')}</td>`;
+    
+    let table1 = sum.map(x => `<tr><td style="text-align:center;">${x.no}</td><td>${esc(x.period)}</td>${td(x.details)}${td(x.notes)}</tr>`).join('');
+    
+    let table2 = photos.map((ph) => `
+        <tr style="break-inside:avoid; page-break-inside:avoid;">
+            <td style="width:50%; text-align:center; padding:10px;">
+                <img class="report-photo" src="${ph.url}" alt="Dokumentasi Foto" style="max-width:100%; height:auto; max-height:180px; border-radius:6px;">
+            </td>
+            <td style="text-align:justify; vertical-align:middle; padding:10px;">
+                <b>Tanggal:</b> ${dateFmt(ph.date)}<br>
+                <b>Kegiatan:</b> ${esc(ph.caption)}
+            </td>
+        </tr>
     `).join('');
 
-    let table2Rows = photos.map((ph, i) => `
-      <tr>
-        <td style="width:50%;text-align:center;vertical-align:middle;padding:10px;">
-          <img class="report-photo" src="${ph.url}" alt="Dokumentasi ${i + 1}">
-        </td>
-        <td style="vertical-align:top;padding:10px;text-align:justify;">
-          <b>Foto ${i + 1}</b><br>
-          <b>Tanggal:</b> ${dateFmt(ph.date)}<br>
-          <b>Lokasi:</b> ${esc(ph.location)}<br>
-          <b>Keterangan:</b> ${esc(ph.caption)}<br><br>
-          <button class="no-print btn-edit-inline" onclick="editEntry('${esc(ph.id)}')">✏️ Edit Logbook / Foto Ini</button>
-        </td>
-      </tr>
-    `).join('');
+    let conclusion = a.length ? `Pada periode ${esc(range)}, pelaksanaan tugas ${esc(p.role || 'pegawai')} pada jabatan ${esc(p.position || '-')} telah mendukung kelancaran operasional ${esc(p.office || '-')}. Kegiatan yang tercatat meliputi ${esc([...new Set(a.map(x => x.activity).filter(Boolean))].slice(0, 15).join(', ') || 'kegiatan operasional kantor sesuai logbook')}. Secara umum, seluruh kegiatan dilaksanakan secara tertib, efektif, dan sesuai catatan logbook.` : 'Belum terdapat data kegiatan pada periode laporan yang dipilih.';
 
     return `
-      <div class="report-document">
-        <section class="a4-paper report-cover">
-          <div>
-            <h1 style="font-size:18pt;margin:0;font-weight:bold;">LAPORAN KINERJA</h1>
-            <h2 style="font-size:15pt;margin:8px 0;font-weight:bold;">PELAKSANAAN TUGAS OPERASIONAL KANTOR</h2>
-            <h2 style="font-size:14pt;margin:0;font-weight:bold;">BULAN ${esc(info.monthName.toUpperCase())} TAHUN ${esc(String(info.year))}</h2>
-          </div>
-          <div style="margin:20mm 0;text-align:center;">
-            <img src="${logoUrl}" style="width:130px;height:130px;object-fit:contain;" alt="Logo Kementan">
-          </div>
-          <div>
-            <p style="text-align:center!important;margin:0;font-size:12pt;">Disusun oleh :</p>
-            <h3 style="font-size:13pt;margin:5px 0;font-weight:bold;">${esc(p.name.toUpperCase())}</h3>
-            <p style="text-align:center!important;margin:0;font-size:11pt;"><b>NIP. ${esc(p.nip || '199808272025211042')}</b></p>
-            <p style="text-align:center!important;margin:3px 0 25px;font-size:11pt;">${esc(p.role)}</p>
-            <h3 style="font-size:12pt;margin:0;font-weight:bold;text-align:center!important;">${esc(p.office.toUpperCase())}</h3>
-            <h3 style="font-size:12pt;margin:5px 0 0;font-weight:bold;text-align:center!important;">${esc(String(info.year))}</h3>
-          </div>
-        </section>
+    <div class="report-document" style="font-family: Arial, 'Arial MT', sans-serif !important; text-align: justify !important;">
+      <!-- COVER LAPORAN RESMI -->
+      <section class="report-page report-cover" style="text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:250mm;">
+        <div>
+          <h1 style="font-size:22pt; font-weight:bold; margin:0 0 10px;">LAPORAN KINERJA</h1>
+          <h2 style="font-size:16pt; font-weight:bold; margin:5px 0 10px;">PELAKSANAAN TUGAS OPERASIONAL KANTOR</h2>
+          <h3 style="font-size:15pt; font-weight:bold; margin:0;">PERIODE ${esc(title)} ${esc(String(info.year))}</h3>
+        </div>
+        <div style="margin:25px auto;">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcAAClTElEQVR42uyddZxbRdfHfzP3xpP1uhuUtlBKi0spULy4u7vDi0txeIAHf/Di7q7FtUihUGpUqMu6xe6def+4N3eT3exukk2y2eR8n88+pdskd+Zk5DczZ85hZcduK0EQBEEQBEGkDZ6vFWP03ZJdya5kVzIB2ZXsSpDASi+0LUd2JbsSZFeyK9mVIIFFEARBEARBAosgCIIgCIIggUUQBEEQBEECiyAIgiAIggQWQRAEQRAEkR2BRaE6C6dMZFeqA9mVykR2pTqQXbMksChUZ+GUiexKdSC7UpnIrlQHsmuWBBY1vsKC7Ep2JbsSZFeyK5FTAotyERaOXUF2JbuSXcmuZFeya0HXlHIR0pqHILuSXcmuBNmV7NpzBRZBEARBEERhQAKLIAiCIAiCIIFFEARBEARBAosgCIIgCIIggUUQBEEQBEECiyAIgiAIggQWQRAEQRAEkR2BRaE6C6dMZFeqA9mVykR2pTqQXbMksChUZ+GUiexKdSC7UpnIrlQHsmuWBBY1vsKC7Ep2JbsSZFeyK5FTAotyERaOXUF2JbuSXcmuZFeya0HXlHIR0pqHILuSXcmuBNmV7NpzBRZBEARBEERhQAKLIAiCIAiCIIFFEARBEARBAosgCIIgCIIggUUQBEEQBEECiyAIgiAIggQWQRAEQRAECSyCIAiCIAgSWARBEARBEAQJLEE..." style="width:120px; height:auto;">
+        </div>
+        <div>
+          <p style="font-size:12pt; margin:0 0 5px; text-align:center;">Disusun oleh:</p>
+          <h2 style="font-size:14pt; font-weight:bold; margin:0 0 5px; text-align:center;">${esc(p.name || 'Nama Pegawai').toUpperCase()}</h2>
+          <p style="font-size:12pt; margin:0 0 5px; text-align:center;"><b>NIP/ID: 199808272025211042</b></p>
+          <p style="font-size:12pt; margin:0; text-align:center;">${esc(p.role || '')}</p>
+          <p style="font-size:12pt; margin:0; text-align:center;">${esc(p.position || 'Operator Layanan Operasional')}</p>
+        </div>
+        <div style="margin-top:30px;">
+          <h3 style="font-size:13pt; font-weight:bold; margin:0 0 5px; text-align:center;">${esc(p.office || 'Kebun Pemeriksaan Substantif PVT I Manoko').toUpperCase()}</h3>
+          <h3 style="font-size:13pt; font-weight:bold; margin:0; text-align:center;">TAHUN ${esc(String(info.year))}</h3>
+        </div>
+      </section>
 
-        <section class="a4-paper report-body page-break">
-          <h2 class="report-chapter">BAB I<br>PENDAHULUAN</h2>
-          <h3>1.1 LATAR BELAKANG</h3>
-          <p>Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional dan pelayanan perkantoran secara efektif, tertib, dan berkesinambungan. Salah satu bentuk dukungan tersebut dilaksanakan melalui penempatan PPPK Paruh Waktu pada jabatan Operator Layanan Operasional.</p>
-          <p>PPPK Paruh Waktu pada jabatan tersebut memiliki peran dalam membantu pelaksanaan kegiatan administrasi, layanan internal, pengelolaan kebutuhan umum, penataan dokumen, pengelolaan sarana dan prasarana, serta dukungan terhadap berbagai kegiatan kedinasan. Pelaksanaan tugas tersebut diperlukan untuk memastikan kegiatan operasional kantor dapat berjalan dengan baik dan memberikan pelayanan yang optimal kepada pegawai maupun unit kerja.</p>
-          <h3>1.2 TUJUAN</h3>
-          <p>Tujuan penyusunan laporan pelaksanaan tugas dan fungsi jabatan Operator Layanan Operasional, adalah sebagai bentuk pertanggungjawaban kinerja pegawai di lingkungan Pusat Pelindungan Varietas Tanaman dan Perizinan Pertanian.</p>
-          <h3>1.3 WAKTU PELAKSANAAN</h3>
-          <p>Kegiatan Operator Layanan Operasional dilaksanakan di Kebun Pemeriksaan Substantif PVT I Manoko pada periode Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}.</p>
-        </section>
+      <!-- BAB I PENDAHULUAN -->
+      <section class="report-page report-body" style="margin-top:30px;">
+        <h2 class="report-chapter" style="text-align:center; font-size:14pt; font-weight:bold;">BAB I<br>PENDAHULUAN</h2>
+        <h3 style="font-size:12pt; font-weight:bold;">1.1 LATAR BELAKANG</h3>
+        <p style="text-align:justify; text-justify:inter-word;">Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional dan pelayanan perkantoran secara efektif, tertib, dan berkesinambungan. Pelaksanaan tugas pada jabatan ${esc(p.position || 'Operator Layanan Operasional')} memiliki peran penting dalam membantu kegiatan administrasi, pengelolaan sarana dan prasarana, serta dukungan operasional kantor secara menyeluruh.</p>
+        <p style="text-align:justify; text-justify:inter-word;">Oleh karena itu, laporan ini disusun sebagai bentuk uraian pelaksanaan kegiatan dan hasil pekerjaan berdasarkan data logbook harian pada periode ${esc(range)} sebagai bahan pertanggungjawaban, pemantauan, dan evaluasi kinerja pegawai.</p>
 
-        <section class="a4-paper report-body page-break">
-          <h2 class="report-chapter">BAB II<br>AKUNTABILITAS KINERJA</h2>
-          <h3>2.1 HASIL PELAKSANAAN</h3>
-          <p><b>Tabel 1. Rincian kegiatan operator layanan operasional Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}</b></p>
-          <table>
-            <thead>
-              <tr>
-                <th style="width:6%">No.</th>
-                <th style="width:18%">Tanggal</th>
-                <th style="width:48%">Rincian Pekerjaan</th>
-                <th style="width:28%">Keterangan</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${table1Rows || '<tr><td colspan="4" style="text-align:center;">Belum ada data kegiatan pada periode ini.</td></tr>'}
-            </tbody>
-          </table>
-        </section>
+        <h3 style="font-size:12pt; font-weight:bold; margin-top:20px;">1.2 TUJUAN</h3>
+        <p style="text-align:justify; text-justify:inter-word;">Tujuan penyusunan laporan ini adalah sebagai pertanggungjawaban pelaksanaan tugas operasional kantor serta menyajikan rangkuman hasil kegiatan secara terstruktur berdasarkan catatan kinerja harian.</p>
 
-        <section class="a4-paper report-body page-break">
-          <h3>DOKUMENTASI KEGIATAN</h3>
-          <p><b>Tabel 2. Dokumentasi foto kegiatan secara berurutan Bulan ${esc(info.monthName)} Tahun ${esc(String(info.year))}</b></p>
-          <table>
-            <thead>
-              <tr>
-                <th style="width:50%">Foto Dokumentasi</th>
-                <th style="width:50%">Keterangan Kegiatan</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${table2Rows || '<tr><td colspan="2" style="text-align:center;">Tidak ada foto dokumentasi pada periode ini.</td></tr>'}
-            </tbody>
-          </table>
-        </section>
+        <h3 style="font-size:12pt; font-weight:bold; margin-top:20px;">1.3 WAKTU PELAKSANAAN</h3>
+        <p style="text-align:justify; text-justify:inter-word;">Kegiatan dilaksanakan di unit kerja ${esc(p.office || '-')} pada periode ${esc(range)}.</p>
+      </section>
 
-        <section class="a4-paper report-body page-break">
-          <h2 class="report-chapter">BAB III<br>PENUTUP</h2>
-          <h3>3.1 KESIMPULAN</h3>
-          <p>Pada bulan ${esc(info.monthName)} tahun ${esc(String(info.year))} secara umum kegiatan pelaksanaan tugas PPPK Paruh Waktu jabatan Operator Layanan Operasional telah mendukung kelancaran operasional KPS PVT I Manoko.</p>
-          <h3>3.2 SARAN</h3>
-          <p>Demikian laporan ini disampaikan. Atas perhatian dan kerjasamanya, diucapkan terima kasih.</p>
-          <div class="report-sign">
-            <p>Bandung Barat, ${a.length ? dateFmt(a[a.length - 1].date) : '30 ' + info.monthName + ' ' + info.year}<br>Operator Layanan Operasional,</p>
-            <br><br><br><br>
-            <p><b>${esc(p.name)}</b><br>NIP. ${esc(p.nip || '199808272025211042')}</p>
-          </div>
-          <div style="clear:both;"></div>
-        </section>
-      </div>
-    `;
-  }
+      <!-- BAB II AKUNTABILITAS KINERJA -->
+      <section class="report-page report-body" style="margin-top:30px;">
+        <h2 class="report-chapter" style="text-align:center; font-size:14pt; font-weight:bold;">BAB II<br>AKUNTABILITAS KINERJA</h2>
+        <h3 style="font-size:12pt; font-weight:bold;">2.1 HASIL PELAKSANAAN KEGIATAN</h3>
+        <p style="text-align:justify; text-justify:inter-word;">Berikut adalah rincian pelaksanaan kegiatan operasional kantor periode ${esc(range)}:</p>
+        
+        <p><b>Tabel 1. Rincian Kegiatan Logbook Kinerja</b></p>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+          <thead>
+            <tr style="background-color:#f0f0f0;">
+              <th style="border:1px solid #333; padding:8px; text-align:center; width:5%;">No.</th>
+              <th style="border:1px solid #333; padding:8px; text-align:center; width:20%;">Tanggal / Periode</th>
+              <th style="border:1px solid #333; padding:8px; text-align:center; width:50%;">Rincian Pekerjaan</th>
+              <th style="border:1px solid #333; padding:8px; text-align:center; width:25%;">Keterangan / Lokasi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${table1 || '<tr><td colspan="4" style="text-align:center; padding:15px;">Belum ada data pada periode ini.</td></tr>'}
+          </tbody>
+        </table>
 
-  async function report() {
+        <p style="margin-top:20px;"><b>Tabel 2. Dokumentasi Foto Kegiatan (Urut dari Tanggal Awal)</b></p>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#f0f0f0;">
+              <th style="border:1px solid #333; padding:8px; text-align:center; width:50%;">Foto Dokumentasi</th>
+              <th style="border:1px solid #333; padding:8px; text-align:center; width:50%;">Keterangan Kegiatan</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${table2 || '<tr><td colspan="2" style="text-align:center; padding:15px;">Tidak ada foto dokumentasi pada periode ini.</td></tr>'}
+          </tbody>
+        </table>
+      </section>
+
+      <!-- BAB III PENUTUP -->
+      <section class="report-page report-body" style="margin-top:30px;">
+        <h2 class="report-chapter" style="text-align:center; font-size:14pt; font-weight:bold;">BAB III<br>PENUTUP</h2>
+        <h3 style="font-size:12pt; font-weight:bold;">3.1 KESIMPULAN</h3>
+        <p style="text-align:justify; text-justify:inter-word;">${conclusion}</p>
+
+        <h3 style="font-size:12pt; font-weight:bold; margin-top:20px;">3.2 SARAN</h3>
+        <p style="text-align:justify; text-justify:inter-word;">Pencatatan logbook kinerja harian dan pendokumentasian foto kegiatan hendaknya terus dilakukan secara konsisten dan teratur agar penyusunan laporan bulanan maupun tahunan berjalan lancar dan akurat.</p>
+
+        <div class="report-sign" style="margin-top:50px; text-align:right;">
+          <p style="margin:0;">Bandung Barat, ${dateFmt(iso(new Date()))}</p>
+          <p style="margin:0 0 60px;">${esc(p.position || 'Operator Layanan Operasional')}</p>
+          <p style="margin:0;"><b>${esc(p.name || 'Riki Subagja')}</b></p>
+          <p style="margin:0;">NIP: 199808272025211042</p>
+        </div>
+      </section>
+    </div>`;
+}
+
+// Event Handler untuk Fitur Preview (Pratinjau Laporan)
+async function showReportPreview() {
     let a = selected();
-    let photos = await getReportPhotosChronological(a);
-    if ($('reportOutput'))$('reportOutput').innerHTML = reportDocHtml(a, photos);
-  }
+    let modal = $('previewModal');
+    let modalBody = $('modalReportBody');
+    
+    modalBody.innerHTML = '<p style="text-align:center; padding:40px;">Memuat pratinjau laporan dan foto dokumentasi...</p>';
+    modal.style.display = 'block';
 
-  if ($('btnPreviewReport')) {$('btnPreviewReport').onclick = async () => {
-      let a = selected();
-      let photos = await getReportPhotosChronological(a);
-      if ($('modalPaperContent'))$('modalPaperContent').innerHTML = reportDocHtml(a, photos);
-      if ($('previewModal'))$('previewModal').classList.remove('hide');
-      document.body.style.overflow = 'hidden';
-    };
-  }
-
-  window.closePreviewModal = function() {
-    if ($('previewModal'))$('previewModal').classList.add('hide');
-    document.body.style.overflow = 'auto';
-  };
-
-  function renderAll() { renderList(); report(); }
-
-  if ($('filterMonth'))$('filterMonth').oninput = renderList;
-  if ($('search'))$('search').oninput = renderList;
-  if ($('rtype')) {$('rtype').onchange = () => {
-      let t = $('rtype').value;
-      if ($('monthBox'))$('monthBox').classList.toggle('hide', t !== 'month');
-      if ($('quarterBox'))$('quarterBox').classList.toggle('hide', t !== 'quarter');
-      report();
-    };
-  }
-  if ($('refreshReport'))$('refreshReport').onclick = report;
-  if ($('print'))$('print').onclick = () => { report(); window.print(); };
-
-  // UNDUH FILE WORD (.DOCX)
-  if ($('word')) {$('word').onclick = async () => {
-      const btn = $('word');
-      const origText = btn.textContent;
-      try {
-        const docxLib = window.docx || docx;
-        if (!docxLib) {
-          alert('Pustaka pendukung Word sedang diunduh. Silakan tunggu beberapa detik lalu coba lagi.');
-          return;
-        }
-        btn.disabled = true;
-        btn.textContent = '⏳ Membuat File Word...';
-
-        const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, PageBreak, AlignmentType, WidthType } = docxLib;
-        const a = selected(), p = profile, info = periodInfo();
-        const fontName = "Arial";
-
-        const para = (text, opts = {}) => new Paragraph({
-          alignment: opts.align || AlignmentType.JUSTIFY,
-          spacing: { before: opts.before || 0, after: opts.after || 120, line: 360 },
-          children: [new TextRun({ text: text, font: fontName, size: opts.size || 22, bold: !!opts.bold })]
-        });
-
-        const centerHeading = (text, size = 24, bold = true) => new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { before: 120, after: 120 },
-          children: [new TextRun({ text: text, font: fontName, size: size, bold: bold })]
-        });
-
-        const cell = (v, widthPercent, bold = false, align = AlignmentType.LEFT) => new TableCell({
-          width: { size: widthPercent, type: WidthType.PERCENTAGE },
-          children: [new Paragraph({ alignment: align, children: [new TextRun({ text: String(v ?? ''), font: fontName, size: 20, bold: bold })] })]
-        });
-
-        let children = [];
-
-        // COVER
-        children.push(centerHeading('LAPORAN KINERJA', 28, true));
-        children.push(centerHeading('PELAKSANAAN TUGAS OPERASIONAL KANTOR', 26, true));
-        children.push(centerHeading(`BULAN ${info.monthName.toUpperCase()} TAHUN ${info.year}`, 26, true));
-        children.push(centerHeading('\n\n\nDisusun oleh :', 22, false));
-        children.push(centerHeading(p.name, 24, true));
-        children.push(centerHeading(p.nip || '199808272025211042', 22, false));
-        children.push(centerHeading(p.role, 22, false));
-        children.push(centerHeading(`\n\n${p.office.toUpperCase()}`, 24, true));
-        children.push(centerHeading(String(info.year), 24, true));
-
-        // BAB I
-        children.push(new Paragraph({ children: [new PageBreak()] }));
-        children.push(centerHeading('BAB I PENDAHULUAN', 24, true));
-        children.push(para('1.1 LATAR BELAKANG', { bold: true }));
-        children.push(para('Dalam rangka mendukung kelancaran pelaksanaan tugas dan fungsi organisasi, diperlukan dukungan sumber daya manusia yang mampu melaksanakan kegiatan operasional secara efektif.'));
-
-        // BAB II
-        children.push(new Paragraph({ children: [new PageBreak()] }));
-        children.push(centerHeading('BAB II AKUNTABILITAS KINERJA', 24, true));
-        children.push(para('2.1 HASIL PELAKSANAAN', { bold: true }));
-
-        let tableRows = [
-          new TableRow({
-            children: [
-              cell('No.', 10, true, AlignmentType.CENTER),
-              cell('Tanggal', 20, true, AlignmentType.CENTER),
-              cell('Rincian Pekerjaan', 45, true, AlignmentType.CENTER),
-              cell('Keterangan', 25, true, AlignmentType.CENTER)
-            ]
-          })
-        ];
-
-        a.forEach((act, idx) => {
-          tableRows.push(new TableRow({
-            children: [
-              cell(idx + 1, 10, false, AlignmentType.CENTER),
-              cell(dateFmt(act.date), 20, false, AlignmentType.LEFT),
-              cell(act.activity, 45, false, AlignmentType.LEFT),
-              cell(`${act.location}${act.notes ? ' (' + act.notes + ')' : ''}`, 25, false, AlignmentType.LEFT)
-            ]
-          }));
-        });
-
-        children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }));
-
-        // BAB III
-        children.push(new Paragraph({ children: [new PageBreak()] }));
-        children.push(centerHeading('BAB III PENUTUP', 24, true));
-        children.push(para('3.1 KESIMPULAN', { bold: true }));
-        children.push(para(`Pada bulan ${info.monthName} tahun ${info.year} secara umum kegiatan pelaksanaan tugas telah dilaksanakan dengan baik.`));
-
-        children.push(new Paragraph({
-          alignment: AlignmentType.RIGHT,
-          spacing: { before: 360 },
-          children: [
-            new TextRun({ text: `Bandung Barat, 30 ${info.monthName} ${info.year}\nOperator Layanan Operasional,\n\n\n\n`, font: fontName, size: 22 }),
-            new TextRun({ text: p.name, font: fontName, size: 22, bold: true }),
-            new TextRun({ text: `\nNIP. ${p.nip || '199808272025211042'}`, font: fontName, size: 22 })
-          ]
-        }));
-
-        const doc = new Document({
-          sections: [{
-            properties: { page: { margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } } },
-            children: children
-          }]
-        });
-
-        const blob = await Packer.toBlob(doc);
-        let u = URL.createObjectURL(blob);
-        let link = document.createElement('a');
-        link.href = u;
-        link.download = `Laporan_Kinerja_${info.monthName}_${info.year}_${p.name}.docx`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(u), 2000);
-      } catch (err) {
-        alert('Gagal membuat file Word: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = origText;
-      }
-    };
-  }
-
-  if ($('profileForm')) {$('profileForm').onsubmit = async e => {
-      e.preventDefault();
-      profile = {
-        name: $('pname').value.trim(),
-        nip: $('pnip') ?$('pnip').value.trim() : '199808272025211042',
-        role: $('prole').value.trim(),
-        position: $('pposition').value.trim(),
-        office: $('poffice').value.trim(),
-        supervisor: $('psupervisor').value.trim()
-      };
-      try {
-        const { error } = await supa.from('logbook_profiles').upsert({ user_id: user.id, ...profile }, { onConflict: 'user_id' });
-        if (error) throw error;
-        msg('profileStatus', 'Profil berhasil disimpan.');
-      } catch (e) {
-        msg('profileStatus', e.message, true);
-      }
-    };
-  }
-
-  if ($('reload'))$('reload').onclick = async () => { try { await loadEntries(); renderAll(); } catch (e) { msg('settingsStatus', e.message, true); } };
-
-  const today = new Date();
-  if ($('date'))$('date').value = iso(today);
-  if ($('filterMonth'))$('filterMonth').value = iso(today).slice(0, 7);
-  if ($('ryear'))$('ryear').value = today.getFullYear();
-  if ($('rmonth'))$('rmonth').value = today.getMonth() + 1;
-
-  hookTabs();
-  initClient();
-
-  if (window.supabase?.createClient) {
     try {
-      let c = JSON.parse(localStorage.getItem(KEY) || 'null') || { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
-      supa = window.supabase.createClient(c.url, c.key);
-      supa.auth.getSession().then(({ data }) => {
-        if (data.session) {
-          user = data.session.user;
-          enterApp().catch(() => { $('workspace').classList.add('hide');$('auth').classList.remove('hide'); });
-        }
-      });
-    } catch (e) {}
-  }
-})();
+        let photos = await getReportPhotos(a, 50); // Mendapatkan foto terurut dari tanggal awal
+        modalBody.innerHTML = reportDocHtml(a, photos);
+    } catch (e) {
+        modalBody.innerHTML = '<p style="color:red; text-align:center;">Gagal memuat pratinjau: ' + e.message + '</p>';
+    }
+}
+
+// Hubungkan Tombol Preview dan Tutup Modal
+$('previewReportBtn').onclick = showReportPreview;
+$('closeModalBtn').onclick = () => {$('previewModal').style.display = 'none'; };
+window.onclick = (e) => { if (e.target === $('previewModal'))$('previewModal').style.display = 'none'; };
